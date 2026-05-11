@@ -1,0 +1,264 @@
+/* ============================================================
+   DRIVEEASE — themes.css
+   Dark Mode · Color Accent Themes · Theme-aware Overrides
+   ============================================================ */
+
+/* ── Theme Transition ─────────────────────────────────────── */
+/* Applied to body so every page transitions smoothly */
+body,
+.navbar,
+.card-base,
+.modal-overlay,
+.input-field,
+.dropdown-menu {
+  transition:
+    background-color var(--transition-slow),
+    border-color     var(--transition-slow),
+    color            var(--transition-slow),
+    box-shadow       var(--transition-slow);
+}
+
+/* ══════════════════════════════════════════════════════════
+   LIGHT THEME (default — :root vars already set in global.css)
+   ══════════════════════════════════════════════════════════ */
+
+/* ── Navbar — Light ───────────────────────────────────────── */
+.navbar {
+  background: transparent;
+  border-bottom: 1px solid transparent;
+}
+
+.navbar.scrolled {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom-color: var(--color-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Hero gradient — Light ────────────────────────────────── */
+.hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(26, 107, 245, 0.18) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(77, 142, 255, 0.12) 0%, transparent 60%),
+    var(--color-bg);
+}
+
+/* ── Surface variants — Light ─────────────────────────────── */
+.surface        { background: var(--color-surface); }
+.surface-2      { background: var(--color-surface-2); }
+.surface-border { border: 1px solid var(--color-border); }
+
+/* ══════════════════════════════════════════════════════════
+   DARK THEME  [data-theme="dark"]
+   ══════════════════════════════════════════════════════════ */
+
+[data-theme="dark"] .navbar.scrolled {
+  background: rgba(10, 15, 30, 0.92);
+  border-bottom-color: var(--color-border);
+}
+
+[data-theme="dark"] .hero-gradient {
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(26, 107, 245, 0.22) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(77, 142, 255, 0.14) 0%, transparent 60%),
+    var(--color-bg);
+}
+
+[data-theme="dark"] .card-base {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .card-glass {
+  background: rgba(17, 24, 39, 0.8);
+  border-color: rgba(42, 53, 86, 0.6);
+}
+
+[data-theme="dark"] .input-field {
+  background: var(--color-surface-2);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .input-field::placeholder {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .dropdown-menu {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .modal-content {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+}
+
+[data-theme="dark"] .skeleton-loader {
+  background: linear-gradient(
+    90deg,
+    var(--color-surface)   25%,
+    var(--color-surface-2) 50%,
+    var(--color-surface)   75%
+  );
+  background-size: 200% 100%;
+}
+
+[data-theme="dark"] .divider,
+[data-theme="dark"] .divider-text::before,
+[data-theme="dark"] .divider-text::after {
+  background: var(--color-border);
+}
+
+/* ── Dark mode scrollbar ──────────────────────────────────── */
+[data-theme="dark"] ::-webkit-scrollbar-track { background: var(--color-surface); }
+[data-theme="dark"] ::-webkit-scrollbar-thumb { background: var(--color-border); }
+
+/* ══════════════════════════════════════════════════════════
+   COLOR ACCENT THEMES
+   Applied via: document.documentElement.setAttribute('data-accent', 'red')
+   theme.js updates --color-primary, --color-primary-dark, --color-primary-light,
+   --color-primary-subtle at runtime. These classes provide fallback presets.
+   ══════════════════════════════════════════════════════════ */
+
+/* Blue (default — no override needed) */
+[data-accent="blue"] {
+  --color-primary:        #1A6BF5;
+  --color-primary-dark:   #1250C2;
+  --color-primary-light:  #4D8EFF;
+  --color-primary-subtle: #EBF1FF;
+}
+
+/* Red */
+[data-accent="red"] {
+  --color-primary:        #EF4444;
+  --color-primary-dark:   #DC2626;
+  --color-primary-light:  #F87171;
+  --color-primary-subtle: #FEF2F2;
+}
+
+/* Orange */
+[data-accent="orange"] {
+  --color-primary:        #F97316;
+  --color-primary-dark:   #EA580C;
+  --color-primary-light:  #FB923C;
+  --color-primary-subtle: #FFF7ED;
+}
+
+/* ── Accent-aware component overrides ─────────────────────── */
+[data-accent="red"] .btn-primary {
+  background: var(--color-primary);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3);
+}
+
+[data-accent="orange"] .btn-primary {
+  background: var(--color-primary);
+  box-shadow: 0 4px 16px rgba(249, 115, 22, 0.3);
+}
+
+[data-accent="red"] .btn-primary:hover,
+[data-accent="orange"] .btn-primary:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Accent-colored nav active indicator */
+.nav-link.active::after {
+  background: var(--color-primary);
+}
+
+/* Accent-colored focus ring */
+:focus-visible {
+  outline-color: var(--color-primary);
+}
+
+/* ── Theme toggle switch visual state ─────────────────────── */
+.toggle-switch input:checked + .toggle-track {
+  background: var(--color-primary);
+}
+
+/* ── Section background alternation ──────────────────────── */
+.section-alt {
+  background: var(--color-surface);
+}
+
+[data-theme="dark"] .section-alt {
+  background: var(--color-surface);
+}
+
+/* ── Gradient text (hero headline) ───────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-light), #82B4FF);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+/* ── Stats bar ────────────────────────────────────────────── */
+.stats-bar {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+[data-accent="red"]    .stats-bar { background: var(--color-primary); }
+[data-accent="orange"] .stats-bar { background: var(--color-primary); }
+
+/* ── Leaflet map overrides ────────────────────────────────── */
+[data-theme="dark"] .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+}
+
+[data-theme="dark"] .leaflet-container {
+  background: var(--color-surface-2);
+}
+
+/* ── Flatpickr overrides ──────────────────────────────────── */
+[data-theme="dark"] .flatpickr-calendar {
+  background: var(--color-surface);
+  border-color: var(--color-border);
+  color: var(--color-text);
+  box-shadow: var(--shadow-lg);
+}
+
+[data-theme="dark"] .flatpickr-day {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .flatpickr-day:hover {
+  background: var(--color-surface-2);
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+.flatpickr-day.inRange {
+  background: var(--color-primary-subtle) !important;
+  border-color: var(--color-primary-subtle) !important;
+  color: var(--color-primary-dark) !important;
+}
+
+[data-theme="dark"] .flatpickr-day.inRange {
+  background: rgba(26, 107, 245, 0.25) !important;
+  color: var(--color-primary-light) !important;
+}
+
+/* ── Swiper overrides ─────────────────────────────────────── */
+.swiper-pagination-bullet-active {
+  background: var(--color-primary) !important;
+}
+
+.swiper-button-next,
+.swiper-button-prev {
+  color: var(--color-primary) !important;
+}

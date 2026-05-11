@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Masuk — DriveEase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <style>
+    .login-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; }
+    .login-form-panel {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: var(--sp-8) var(--sp-12); background: var(--color-bg);
+      animation: fadeInLeft 400ms ease forwards;
+    }
+    .login-brand-panel {
+      position: relative; overflow: hidden;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      padding: var(--sp-12); color: #fff; text-align: center;
+      background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 45%, #0a1628 100%);
+      animation: fadeIn 600ms ease forwards;
+    }
+    .login-brand-panel::before {
+      content: ''; position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=1200&q=80') center/cover no-repeat;
+      opacity: 0.35; mix-blend-mode: overlay;
+    }
+    .login-brand-inner { position: relative; z-index: 1; max-width: 420px; }
+    .login-brand-inner h2 { font-family: var(--font-display); font-size: var(--text-4xl); color: #fff; margin-bottom: var(--sp-4); }
+    .login-brand-inner p { color: rgba(255,255,255,0.88); font-size: var(--text-lg); line-height: 1.6; }
+    .login-card {
+      width: 100%; max-width: 420px; margin: 0 auto;
+      animation: fadeInUp 400ms ease forwards;
+    }
+    .auth-tabs { display: flex; gap: var(--sp-2); margin-bottom: var(--sp-6); border-bottom: 2px solid var(--color-border); }
+    .auth-tab {
+      flex: 1; padding: var(--sp-3); font-weight: 600; font-size: var(--text-sm);
+      color: var(--color-text-muted); background: none; border: none; border-bottom: 2px solid transparent;
+      margin-bottom: -2px; cursor: pointer; transition: color var(--transition-fast);
+    }
+    .auth-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .sso-row { margin-top: var(--sp-4); }
+    .sso-btn {
+      width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-3);
+      padding: var(--sp-3); border: 1.5px solid var(--color-border); border-radius: var(--radius-sm);
+      font-weight: 600; color: var(--color-text-muted); opacity: 0.55; cursor: not-allowed;
+    }
+    @media (max-width: 900px) {
+      .login-page { grid-template-columns: 1fr; }
+      .login-brand-panel { min-height: 220px; order: -1; padding: var(--sp-8); }
+      .login-form-panel { padding: var(--sp-6); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-page">
+    <div class="login-form-panel">
+      <div class="login-card">
+        <a href="index.html" class="navbar__brand" style="margin-bottom: var(--sp-8); display: inline-flex;">
+          <i class="fa-solid fa-car-side" aria-hidden="true"></i> Drive<span>Ease</span>
+        </a>
+
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" id="tabLogin" role="tab" aria-selected="true">Masuk</button>
+          <button type="button" class="auth-tab" id="tabRegister" role="tab" aria-selected="false">Daftar</button>
+        </div>
+
+        <form id="loginForm" class="flex-col gap-4" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="loginEmail">Email</label>
+            <input class="input-field" type="email" id="loginEmail" name="email" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="loginPassword">Password</label>
+            <div class="input-wrapper has-action">
+              <input class="input-field" type="password" id="loginPassword" name="password" autocomplete="current-password" required />
+              <button type="button" class="input-action" data-toggle-password="loginPassword" aria-label="Tampilkan password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="flex items-center justify-between flex-wrap gap-2">
+            <label class="checkbox-group">
+              <input type="checkbox" name="remember" />
+              <span class="text-sm">Ingat saya</span>
+            </label>
+            <button type="button" class="text-sm font-semibold" style="background:none;border:none;cursor:pointer;color:var(--color-primary);" id="forgotOpen">Lupa password?</button>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">Masuk</button>
+          <div class="divider-text text-sm">atau</div>
+          <div class="sso-row">
+            <button type="button" class="sso-btn" disabled aria-disabled="true">
+              <i class="fa-brands fa-google"></i> Lanjutkan dengan Google
+            </button>
+          </div>
+        </form>
+
+        <form id="registerForm" class="hidden flex-col gap-4" novalidate>
+          <div class="form-group">
+            <label class="form-label" for="regName">Nama Lengkap</label>
+            <input class="input-field" type="text" id="regName" name="name" autocomplete="name" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regEmail">Email</label>
+            <input class="input-field" type="email" id="regEmail" name="email" autocomplete="email" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regPhone">No. HP</label>
+            <input class="input-field" type="tel" id="regPhone" name="phone" placeholder="081234567890" autocomplete="tel" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regPassword">Password</label>
+            <div class="input-wrapper has-action">
+              <input class="input-field" type="password" id="regPassword" name="password" autocomplete="new-password" required />
+              <button type="button" class="input-action" data-toggle-password="regPassword" aria-label="Tampilkan password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regConfirm">Konfirmasi Password</label>
+            <div class="input-wrapper has-action">
+              <input class="input-field" type="password" id="regConfirm" name="confirmPassword" autocomplete="new-password" required />
+              <button type="button" class="input-action" data-toggle-password="regConfirm" aria-label="Tampilkan password">
+                <i class="fa-solid fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <label class="checkbox-group">
+            <input type="checkbox" name="agreeTerms" />
+            <span class="text-sm">Saya setuju dengan syarat &amp; ketentuan</span>
+          </label>
+          <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">Daftar</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="login-brand-panel" aria-hidden="false">
+      <div class="login-brand-inner">
+        <h2>Kendarai Perjalananmu, Tanpa Batas.</h2>
+        <p>Sewa mobil terbaik dengan harga transparan dan layanan 24 jam. DriveEase siap menemani setiap kilometer Anda.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="forgotModal" role="dialog" aria-modal="true" aria-labelledby="forgotTitle">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3 id="forgotTitle">Lupa Password</h3>
+        <button type="button" class="modal-close" id="forgotClose" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <p class="text-sm" style="color:var(--color-text-muted);">Fitur reset password akan tersedia di versi produksi. Hubungi operator untuk bantuan sementara.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-sm" id="forgotOk">Mengerti</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const theme  = localStorage.getItem('driveease_theme')  || 'light';
+      const accent = localStorage.getItem('driveease_accentColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-accent', accent);
+      const ACCENT = {
+        blue:   { p:'#1A6BF5', d:'#1250C2', l:'#4D8EFF', s:'#EBF1FF' },
+        red:    { p:'#EF4444', d:'#DC2626', l:'#F87171', s:'#FEF2F2' },
+        orange: { p:'#F97316', d:'#EA580C', l:'#FB923C', s:'#FFF7ED' },
+      };
+      const c = ACCENT[accent] || ACCENT.blue;
+      const r = document.documentElement;
+      r.style.setProperty('--color-primary', c.p);
+      r.style.setProperty('--color-primary-dark', c.d);
+      r.style.setProperty('--color-primary-light', c.l);
+      r.style.setProperty('--color-primary-subtle', c.s);
+    })();
+  </script>
+  <script type="module">
+    import { initLoginPage } from './assets/js/core/auth.js';
+
+    initLoginPage();
+
+    if (location.hash === '#register') {
+      document.getElementById('tabRegister')?.click();
+    }
+
+    const modal = document.getElementById('forgotModal');
+    const open = () => modal?.classList.add('open');
+    const close = () => modal?.classList.remove('open');
+    document.getElementById('forgotOpen')?.addEventListener('click', open);
+    document.getElementById('forgotClose')?.addEventListener('click', close);
+    document.getElementById('forgotOk')?.addEventListener('click', close);
+    modal?.addEventListener('click', e => { if (e.target === modal) close(); });
+  </script>
+</body>
+</html>

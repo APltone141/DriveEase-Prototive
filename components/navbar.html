@@ -1,0 +1,228 @@
+<!--
+  DRIVEEASE — Navbar Component
+  Paste snippet ini di dalam <body> sebelum konten utama setiap halaman.
+  Ganti path CDN dan href sesuai kedalaman folder halaman.
+-->
+
+<!-- ══ NAVBAR ══════════════════════════════════════════════ -->
+<nav class="navbar" id="navbar" role="navigation" aria-label="Navigasi Utama">
+  <div class="container">
+
+    <!-- Brand -->
+    <a href="index.html" class="navbar__brand" aria-label="DriveEase Beranda">
+      <i class="fa-solid fa-car-side" aria-hidden="true"></i>
+      Drive<span>Ease</span>
+    </a>
+
+    <!-- Desktop links -->
+    <ul class="navbar__links" role="list">
+      <li><a href="index.html"    class="nav-link">Beranda</a></li>
+      <li><a href="layanan.html"  class="nav-link">Layanan</a></li>
+      <li><a href="tracking.html" class="nav-link">Tracking</a></li>
+    </ul>
+
+    <!-- Right actions -->
+    <div class="navbar__actions">
+
+      <!-- Dark mode toggle -->
+      <button
+        class="btn-icon"
+        data-navbar-theme
+        aria-label="Ganti tema"
+        title="Mode Gelap"
+        style="
+          width:36px;height:36px;
+          border-radius:var(--radius-sm);
+          display:flex;align-items:center;justify-content:center;
+          color:var(--color-text-muted);
+          background:transparent;
+          transition:background var(--transition-fast),color var(--transition-fast);
+        "
+      >
+        <i class="fa-solid fa-moon" aria-hidden="true"></i>
+      </button>
+
+      <!-- Auth state — JS replaces this block -->
+      <div id="navAuthArea" class="flex items-center gap-3">
+
+        <!-- Logged OUT state (default; hidden when logged in) -->
+        <div id="navGuest" class="flex items-center gap-2">
+          <a href="login.html" class="btn btn-ghost btn-sm">Masuk</a>
+          <a href="login.html#register" class="btn btn-primary btn-sm">Daftar</a>
+        </div>
+
+        <!-- Logged IN state (hidden by default; shown by navbar.js) -->
+        <div id="navUser" class="hidden flex items-center gap-3">
+          <!-- Booking badge -->
+          <a
+            href="tracking.html"
+            class="btn-icon"
+            id="navBookingBadge"
+            aria-label="Pesanan aktif"
+            style="position:relative;display:none;"
+          >
+            <i class="fa-solid fa-bell" style="font-size:1.1rem;color:var(--color-text-muted);"></i>
+            <span
+              id="navBadgeCount"
+              style="
+                position:absolute;top:-4px;right:-4px;
+                min-width:16px;height:16px;padding:0 4px;
+                background:var(--color-danger);color:#fff;
+                border-radius:var(--radius-pill);
+                font-size:10px;font-weight:700;
+                display:flex;align-items:center;justify-content:center;
+                line-height:1;
+              "
+            >0</span>
+          </a>
+
+          <!-- Avatar dropdown -->
+          <div class="dropdown" id="navAvatarDropdown">
+            <button
+              class="flex items-center gap-2"
+              style="background:none;border:none;cursor:pointer;padding:0;"
+              aria-haspopup="true"
+              aria-expanded="false"
+              id="navAvatarBtn"
+            >
+              <img
+                id="navAvatar"
+                src="https://i.pravatar.cc/150?img=3"
+                alt="Avatar"
+                class="nav-avatar"
+                width="36" height="36"
+              />
+              <span
+                id="navUserName"
+                class="font-semibold text-sm hide-mobile"
+                style="color:var(--color-text);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+              >Pengguna</span>
+              <i class="fa-solid fa-chevron-down hide-mobile" style="font-size:11px;color:var(--color-text-muted);"></i>
+            </button>
+
+            <div class="dropdown-menu" id="navDropdownMenu" role="menu">
+              <a href="profil.html" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-user" aria-hidden="true"></i> Profil Saya
+              </a>
+              <a href="tracking.html" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i> Tracking Pesanan
+              </a>
+              <a href="profil.html#riwayat" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Riwayat
+              </a>
+              <a href="profil.html#pengaturan" class="dropdown-item" role="menuitem">
+                <i class="fa-solid fa-gear" aria-hidden="true"></i> Pengaturan
+              </a>
+              <div class="dropdown-divider" role="separator"></div>
+              <button class="dropdown-item danger" id="navLogoutBtn" role="menuitem" style="width:100%;text-align:left;">
+                <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i> Keluar
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /navAuthArea -->
+
+      <!-- Hamburger (mobile) -->
+      <button class="hamburger" id="hamburger" aria-label="Buka menu" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+    </div><!-- /navbar__actions -->
+  </div><!-- /container -->
+</nav>
+
+<!-- ══ MOBILE DRAWER ════════════════════════════════════════ -->
+<div class="nav-drawer-overlay" id="navOverlay" aria-hidden="true"></div>
+
+<aside class="nav-drawer" id="navDrawer" aria-label="Menu mobile" hidden>
+  <!-- Brand -->
+  <a href="index.html" class="navbar__brand" style="margin-bottom:var(--sp-4);">
+    <i class="fa-solid fa-car-side" aria-hidden="true"></i>
+    Drive<span>Ease</span>
+  </a>
+
+  <!-- User info strip (visible when logged in) -->
+  <div id="drawerUserStrip" class="hidden flex items-center gap-3"
+    style="
+      padding:var(--sp-3) var(--sp-4);
+      background:var(--color-surface);
+      border-radius:var(--radius-md);
+      margin-bottom:var(--sp-4);
+    ">
+    <img id="drawerAvatar" src="https://i.pravatar.cc/150?img=3" alt="Avatar"
+      style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+    <div>
+      <div id="drawerName" class="font-semibold text-sm" style="color:var(--color-text);">Pengguna</div>
+      <div id="drawerEmail" class="text-sm" style="color:var(--color-text-muted);font-size:0.75rem;"></div>
+    </div>
+  </div>
+
+  <!-- Nav links -->
+  <nav>
+    <ul style="display:flex;flex-direction:column;gap:var(--sp-1);" role="list">
+      <li><a href="index.html"    class="nav-link" style="display:block;padding:var(--sp-3) var(--sp-4);">
+        <i class="fa-solid fa-house" style="width:20px;"></i> Beranda
+      </a></li>
+      <li><a href="layanan.html"  class="nav-link" style="display:block;padding:var(--sp-3) var(--sp-4);">
+        <i class="fa-solid fa-car" style="width:20px;"></i> Layanan
+      </a></li>
+      <li><a href="tracking.html" class="nav-link" style="display:block;padding:var(--sp-3) var(--sp-4);">
+        <i class="fa-solid fa-location-dot" style="width:20px;"></i> Tracking
+      </a></li>
+      <li><a href="profil.html"   class="nav-link" style="display:block;padding:var(--sp-3) var(--sp-4);">
+        <i class="fa-solid fa-user" style="width:20px;"></i> Profil
+      </a></li>
+    </ul>
+  </nav>
+
+  <hr class="divider" />
+
+  <!-- Theme toggle in drawer -->
+  <label class="toggle-switch" style="padding:var(--sp-2) var(--sp-4);">
+    <input type="checkbox" data-theme-toggle aria-label="Mode gelap" />
+    <div class="toggle-track"><div class="toggle-thumb"></div></div>
+    <span class="toggle-label">Mode Gelap</span>
+  </label>
+
+  <hr class="divider" />
+
+  <!-- Auth buttons -->
+  <div id="drawerGuestActions" class="flex-col gap-2">
+    <a href="login.html"          class="btn btn-primary" style="width:100%;justify-content:center;">Masuk</a>
+    <a href="login.html#register" class="btn btn-ghost"   style="width:100%;justify-content:center;">Daftar</a>
+  </div>
+
+  <button id="drawerLogoutBtn" class="hidden btn btn-danger btn-sm" style="width:100%;margin-top:auto;">
+    <i class="fa-solid fa-right-from-bracket"></i> Keluar
+  </button>
+</aside>
+
+<!-- ══ NAVBAR INIT SCRIPT ════════════════════════════════════
+     Taruh inline <script type="module"> ini di setiap halaman,
+     atau ekstrak ke assets/js/pages/_navbar.js dan import di page script.
+     ══════════════════════════════════════════════════════════ -->
+<script>
+/* Navbar bootstrap — runs before module scripts */
+(function () {
+  /* Apply saved theme ASAP to prevent flash */
+  const theme  = localStorage.getItem('driveease_theme')  || 'light';
+  const accent = localStorage.getItem('driveease_accentColor') || 'blue';
+  document.documentElement.setAttribute('data-theme', theme);
+  document.documentElement.setAttribute('data-accent', accent);
+
+  const ACCENT = {
+    blue:   { p:'#1A6BF5', d:'#1250C2', l:'#4D8EFF', s:'#EBF1FF' },
+    red:    { p:'#EF4444', d:'#DC2626', l:'#F87171', s:'#FEF2F2' },
+    orange: { p:'#F97316', d:'#EA580C', l:'#FB923C', s:'#FFF7ED' },
+  };
+  const c = ACCENT[accent] || ACCENT.blue;
+  const r = document.documentElement;
+  r.style.setProperty('--color-primary',        c.p);
+  r.style.setProperty('--color-primary-dark',   c.d);
+  r.style.setProperty('--color-primary-light',  c.l);
+  r.style.setProperty('--color-primary-subtle', c.s);
+})();
+</script>
