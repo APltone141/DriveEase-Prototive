@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Checkout — DriveEase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <style>
+    .page-main { padding-top: 88px; padding-bottom: var(--sp-16); }
+    .checkout-layout { display: grid; grid-template-columns: 1fr min(340px, 100%); gap: var(--sp-8); align-items: start; }
+    .checkout-layout.is-finish { grid-template-columns: 1fr; }
+    @media (max-width: 960px) { .checkout-layout { grid-template-columns: 1fr; } }
+    .checkout-step { display: none; }
+    .checkout-step.active { display: block; animation: fadeInUp 350ms ease; }
+    .stepper-wrap { margin-bottom: var(--sp-8); overflow-x: auto; }
+    .step-actions { display: flex; gap: var(--sp-3); justify-content: flex-end; flex-wrap: wrap; margin-top: var(--sp-8); }
+    .car-mini { display: flex; gap: var(--sp-4); align-items: center; padding: var(--sp-4); border: 1px solid var(--color-border); border-radius: var(--radius-md); margin-bottom: var(--sp-6); background: var(--color-surface); }
+    .car-mini img { width: 120px; height: 72px; object-fit: cover; border-radius: var(--radius-sm); }
+    .file-preview { max-height: 80px; border-radius: var(--radius-sm); margin-top: var(--sp-2); display: none; }
+    .file-preview.visible { display: block; }
+    #payOverlay { position: fixed; inset: 0; z-index: 500; background: rgba(13,27,62,0.55); display: none; align-items: center; justify-content: center; flex-direction: column; gap: var(--sp-4); color: #fff; }
+    #payOverlay.open { display: flex; }
+    .page-footer-lite { border-top: 1px solid var(--color-border); padding: var(--sp-6) 0; margin-top: var(--sp-12); text-align: center; font-size: var(--text-sm); color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      const theme  = localStorage.getItem('driveease_theme')  || 'light';
+      const accent = localStorage.getItem('driveease_accentColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-accent', accent);
+      const ACCENT = {
+        blue:   { p:'#1A6BF5', d:'#1250C2', l:'#4D8EFF', s:'#EBF1FF' },
+        red:    { p:'#EF4444', d:'#DC2626', l:'#F87171', s:'#FEF2F2' },
+        orange: { p:'#F97316', d:'#EA580C', l:'#FB923C', s:'#FFF7ED' },
+      };
+      const c = ACCENT[accent] || ACCENT.blue;
+      const r = document.documentElement;
+      r.style.setProperty('--color-primary', c.p);
+      r.style.setProperty('--color-primary-dark', c.d);
+      r.style.setProperty('--color-primary-light', c.l);
+      r.style.setProperty('--color-primary-subtle', c.s);
+    })();
+  </script>
+
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Navigasi Utama">
+    <div class="container">
+      <a href="index.html" class="navbar__brand"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+      <ul class="navbar__links" role="list">
+        <li><a href="index.html" class="nav-link">Beranda</a></li>
+        <li><a href="layanan.html" class="nav-link">Layanan</a></li>
+        <li><a href="tracking.html" class="nav-link">Tracking</a></li>
+      </ul>
+      <div class="navbar__actions">
+        <button class="btn-icon" data-navbar-theme aria-label="Ganti tema" style="width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;color:var(--color-text-muted);background:transparent;">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        <div id="navAuthArea" class="flex items-center gap-3">
+          <div id="navGuest" class="flex items-center gap-2">
+            <a href="login.html" class="btn btn-ghost btn-sm">Masuk</a>
+            <a href="login.html#register" class="btn btn-primary btn-sm">Daftar</a>
+          </div>
+          <div id="navUser" class="hidden flex items-center gap-3">
+            <a href="tracking.html" class="btn-icon" id="navBookingBadge" style="position:relative;display:none;">
+              <i class="fa-solid fa-bell" style="font-size:1.1rem;color:var(--color-text-muted);"></i>
+              <span id="navBadgeCount" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;padding:0 4px;background:var(--color-danger);color:#fff;border-radius:var(--radius-pill);font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;">0</span>
+            </a>
+            <div class="dropdown" id="navAvatarDropdown">
+              <button class="flex items-center gap-2" style="background:none;border:none;cursor:pointer;padding:0;" id="navAvatarBtn" aria-expanded="false">
+                <img id="navAvatar" src="https://i.pravatar.cc/150?img=3" alt="" class="nav-avatar" width="36" height="36" />
+                <span id="navUserName" class="font-semibold text-sm hide-mobile" style="color:var(--color-text);max-width:120px;overflow:hidden;text-overflow:ellipsis;">User</span>
+                <i class="fa-solid fa-chevron-down hide-mobile" style="font-size:11px;color:var(--color-text-muted);"></i>
+              </button>
+              <div class="dropdown-menu" id="navDropdownMenu" role="menu">
+                <a href="profil.html" class="dropdown-item"><i class="fa-solid fa-user"></i> Profil</a>
+                <a href="tracking.html" class="dropdown-item"><i class="fa-solid fa-location-dot"></i> Tracking</a>
+                <div class="dropdown-divider"></div>
+                <button class="dropdown-item danger" id="navLogoutBtn" style="width:100%;text-align:left;"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-drawer-overlay" id="navOverlay"></div>
+  <aside class="nav-drawer" id="navDrawer" hidden>
+    <a href="index.html" class="navbar__brand" style="margin-bottom:var(--sp-4);"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+    <div id="drawerUserStrip" class="hidden flex items-center gap-3" style="padding:var(--sp-3);background:var(--color-surface);border-radius:var(--radius-md);margin-bottom:var(--sp-4);">
+      <img id="drawerAvatar" src="" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+      <div><div id="drawerName" class="font-semibold text-sm"></div><div id="drawerEmail" class="text-xs text-muted"></div></div>
+    </div>
+    <nav><ul style="display:flex;flex-direction:column;gap:var(--sp-1);">
+      <li><a href="index.html" class="nav-link" style="display:block;padding:var(--sp-3);"><i class="fa-solid fa-house" style="width:20px;"></i> Beranda</a></li>
+      <li><a href="layanan.html" class="nav-link" style="display:block;padding:var(--sp-3);"><i class="fa-solid fa-car"></i> Layanan</a></li>
+      <li><a href="tracking.html" class="nav-link" style="display:block;padding:var(--sp-3);"><i class="fa-solid fa-location-dot"></i> Tracking</a></li>
+      <li><a href="profil.html" class="nav-link" style="display:block;padding:var(--sp-3);"><i class="fa-solid fa-user"></i> Profil</a></li>
+    </ul></nav>
+    <hr class="divider" />
+    <label class="toggle-switch" style="padding:var(--sp-2);"><input type="checkbox" data-theme-toggle /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">Mode Gelap</span></label>
+    <hr class="divider" />
+    <div id="drawerGuestActions" class="flex-col gap-2"><a href="login.html" class="btn btn-primary" style="width:100%;text-align:center;">Masuk</a></div>
+    <button id="drawerLogoutBtn" class="hidden btn btn-danger btn-sm" style="width:100%;margin-top:auto;">Keluar</button>
+  </aside>
+
+  <main class="page-main container">
+    <h1 class="font-display" style="font-size:var(--text-2xl);margin-bottom:var(--sp-2);">Pemesanan</h1>
+    <div class="stepper-wrap">
+      <div class="stepper-horizontal" id="checkoutStepper">
+        <div class="step active" data-step-i="1"><div class="step__dot">1</div><div class="step__label">Paket</div></div>
+        <div class="step" data-step-i="2"><div class="step__dot">2</div><div class="step__label">Data</div></div>
+        <div class="step" data-step-i="3"><div class="step__dot">3</div><div class="step__label">Bayar</div></div>
+        <div class="step" data-step-i="4"><div class="step__dot">4</div><div class="step__label">Selesai</div></div>
+      </div>
+    </div>
+
+    <div class="checkout-layout" id="checkoutLayout">
+      <div>
+        <section id="step1" class="checkout-step active card-base" style="padding:var(--sp-6);">
+          <h2 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Paket &amp; jadwal</h2>
+          <div class="car-mini" id="checkoutCarMini"></div>
+          <div class="form-group"><label class="form-label" for="coPackage">Paket sewa</label><select id="coPackage" class="input-field"></select></div>
+          <div class="grid-2" style="gap:var(--sp-4);">
+            <div class="form-group"><label class="form-label" for="coPickupD">Tanggal pickup</label><input type="date" id="coPickupD" class="input-field" required /></div>
+            <div class="form-group"><label class="form-label" for="coPickupT">Jam pickup</label><input type="time" id="coPickupT" class="input-field" value="09:00" /></div>
+            <div class="form-group"><label class="form-label" for="coDropD">Tanggal drop</label><input type="date" id="coDropD" class="input-field" required /></div>
+            <div class="form-group"><label class="form-label" for="coDropT">Jam drop</label><input type="time" id="coDropT" class="input-field" value="09:00" /></div>
+          </div>
+          <div class="form-group"><label class="form-label" for="coCity">Kota pickup</label>
+            <select id="coCity" class="input-field"><option>Jakarta</option><option>Surabaya</option><option>Bandung</option><option>Bali</option><option>Yogyakarta</option></select>
+          </div>
+          <div class="form-group"><label class="form-label" for="coAddr">Alamat lengkap</label><textarea id="coAddr" class="input-field" rows="2" required></textarea></div>
+          <div class="form-group"><label class="form-label" for="coNotes">Catatan</label><textarea id="coNotes" class="input-field" rows="2"></textarea></div>
+          <div class="form-group"><span class="form-label">Opsi sopir</span>
+            <label class="radio-group"><input type="radio" name="coDriver" value="0" checked /> Lepas kunci</label>
+            <label class="radio-group"><input type="radio" name="coDriver" value="1" /> Dengan sopir (+Rp 200.000/hari)</label>
+          </div>
+          <div class="step-actions"><a href="layanan.html" class="btn btn-ghost">Batal</a><button type="button" class="btn btn-primary" id="btnStep1">Lanjut</button></div>
+        </section>
+
+        <section id="step2" class="checkout-step card-base" style="padding:var(--sp-6);">
+          <h2 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Data pemesan</h2>
+          <div class="grid-2">
+            <div class="form-group"><label class="form-label" for="coName">Nama lengkap</label><input id="coName" class="input-field" required /></div>
+            <div class="form-group"><label class="form-label" for="coEmail">Email</label><input id="coEmail" type="email" class="input-field" required /></div>
+            <div class="form-group"><label class="form-label" for="coPhone">No. HP</label><input id="coPhone" class="input-field" required /></div>
+            <div class="form-group"><label class="form-label" for="coKtp">No. KTP</label><input id="coKtp" class="input-field" required /></div>
+          </div>
+          <div class="form-group"><label class="form-label" for="coKtpFile">Foto KTP</label><input type="file" id="coKtpFile" accept="image/*" class="input-field" /><img id="coKtpPrev" class="file-preview" alt="" /></div>
+          <div class="form-group"><label class="form-label" for="coSim">No. SIM</label><input id="coSim" class="input-field" required /></div>
+          <div class="form-group"><label class="form-label" for="coSimFile">Foto SIM</label><input type="file" id="coSimFile" accept="image/*" class="input-field" /><img id="coSimPrev" class="file-preview" alt="" /></div>
+          <div class="form-group"><span class="form-label">Asuransi</span>
+            <label class="radio-group"><input type="radio" name="coIns" value="basic" checked /> Dasar (termasuk)</label>
+            <label class="radio-group"><input type="radio" name="coIns" value="comprehensive" /> Komprehensif (+Rp 75.000/hari)</label>
+          </div>
+          <div class="step-actions">
+            <button type="button" class="btn btn-ghost" id="btnBack2">Kembali</button>
+            <button type="button" class="btn btn-primary" id="btnStep2">Lanjut</button>
+          </div>
+        </section>
+
+        <section id="step3" class="checkout-step card-base" style="padding:var(--sp-6);">
+          <h2 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Pembayaran</h2>
+          <div id="coPayLines" class="order-summary" style="position:static;margin-bottom:var(--sp-6);"></div>
+          <p class="form-label">Metode pembayaran</p>
+          <div class="payment-option selected" data-pay="ewallet">
+            <div class="payment-option__header"><input type="radio" name="payCat" value="ewallet" checked /><span class="payment-option__label">E-Wallet</span></div>
+            <div class="payment-option__sub">
+              <label class="payment-sub-option"><input type="radio" name="paySub" value="gopay" checked /> GoPay</label>
+              <label class="payment-sub-option"><input type="radio" name="paySub" value="ovo" /> OVO</label>
+              <label class="payment-sub-option"><input type="radio" name="paySub" value="dana" /> DANA</label>
+            </div>
+          </div>
+          <div class="payment-option" data-pay="transfer">
+            <div class="payment-option__header"><input type="radio" name="payCat" value="transfer" /><span class="payment-option__label">Transfer bank</span></div>
+            <div class="payment-option__sub" style="display:none;">
+              <label class="payment-sub-option"><input type="radio" name="paySubBank" value="bca" /> BCA</label>
+              <label class="payment-sub-option"><input type="radio" name="paySubBank" value="mandiri" /> Mandiri</label>
+            </div>
+          </div>
+          <div class="promo-input" style="margin-top:var(--sp-4);">
+            <input type="text" id="coPromo" class="input-field" placeholder="Kode promo" />
+            <button type="button" class="btn btn-secondary btn-sm" id="coPromoBtn">Apply</button>
+          </div>
+          <label class="checkbox-group" style="margin:var(--sp-4) 0;"><input type="checkbox" id="coAgree" required /><span class="text-sm">Saya setuju dengan syarat &amp; ketentuan</span></label>
+          <div class="step-actions">
+            <button type="button" class="btn btn-ghost" id="btnBack3">Kembali</button>
+            <button type="button" class="btn btn-primary btn-lg btn-shimmer" id="btnPay"><i class="fa-solid fa-credit-card"></i> Bayar sekarang</button>
+          </div>
+        </section>
+
+        <section id="step4" class="checkout-step">
+          <div class="success-screen card-base" style="padding:var(--sp-8);">
+            <div class="success-checkmark"><i class="fa-solid fa-check"></i></div>
+            <h2 class="font-display" style="font-size:var(--text-2xl);">Pesanan terkonfirmasi</h2>
+            <p class="text-muted">Nomor pesanan</p>
+            <div class="booking-id" id="coBookingId">—</div>
+            <div class="order-summary text-left" id="coSuccessCard" style="margin:var(--sp-6) auto;max-width:420px;text-align:left;"></div>
+            <div class="flex gap-3 justify-center flex-wrap">
+              <a href="tracking.html" class="btn btn-primary" id="coToTrack">Lihat tracking</a>
+              <a href="index.html" class="btn btn-ghost">Beranda</a>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="order-summary" id="coSidebar">
+        <div class="order-summary__title">Ringkasan</div>
+        <div id="coSideLines"></div>
+        <div class="order-line total"><span>Total</span><span class="value" id="coSideTotal">—</span></div>
+      </aside>
+    </div>
+
+    <footer class="page-footer-lite">© 2026 DriveEase</footer>
+  </main>
+
+  <div id="payOverlay" aria-hidden="true">
+    <i class="fa-solid fa-spinner fa-spin fa-3x"></i>
+    <p id="payOverlayText">Memproses pembayaran…</p>
+  </div>
+
+  <script type="module" src="assets/js/pages/checkout.js"></script>
+</body>
+</html>

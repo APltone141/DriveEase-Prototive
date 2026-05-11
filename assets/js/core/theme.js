@@ -37,7 +37,10 @@ function applyAccent(accent) {
 
 function toggleTheme() {
   const current = Storage.getTheme();
-  applyTheme(current === 'dark' ? 'light' : 'dark');
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  const user = Storage.getCurrentUser();
+  if (user) Storage.upsertUser({ ...user, theme: next });
 }
 
 function isDark() {

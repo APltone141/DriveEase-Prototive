@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil — DriveEase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <style>
+    .page-main { padding-top: 88px; padding-bottom: var(--sp-16); }
+    .profil-wrap { display: grid; grid-template-columns: min(260px, 100%) 1fr; gap: var(--sp-8); align-items: start; }
+    @media (max-width: 900px) { .profil-wrap { grid-template-columns: 1fr; } }
+    .profil-side { position: sticky; top: 96px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--sp-6); background: var(--color-bg); }
+    .profil-avatar-wrap { text-align: center; margin-bottom: var(--sp-4); position: relative; display: inline-block; width: 100%; }
+    .profil-avatar-wrap img { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; border: 3px solid var(--color-primary-subtle); margin: 0 auto; }
+    .profil-nav { display: flex; flex-direction: column; gap: var(--sp-1); margin-top: var(--sp-4); }
+    .profil-nav button { width: 100%; text-align: left; padding: var(--sp-3) var(--sp-4); border: none; border-radius: var(--radius-sm); background: transparent; cursor: pointer; font-size: var(--text-sm); color: var(--color-text); display: flex; align-items: center; gap: var(--sp-3); transition: background var(--transition-fast); }
+    .profil-nav button:hover { background: var(--color-surface); }
+    .profil-nav button.active { background: var(--color-primary-subtle); color: var(--color-primary); font-weight: 600; }
+    .profil-section { display: none; }
+    .profil-section.active { display: block; animation: fadeInUp 300ms ease; }
+    .profil-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--sp-6); background: var(--color-bg); margin-bottom: var(--sp-6); }
+    .accent-row { display: flex; flex-wrap: wrap; gap: var(--sp-3); }
+    .accent-row label { padding: var(--sp-2) var(--sp-4); border: 1.5px solid var(--color-border); border-radius: var(--radius-pill); cursor: pointer; font-size: var(--text-sm); display: flex; align-items: center; gap: var(--sp-2); }
+    .accent-row label:has(input:checked) { border-color: var(--color-primary); background: var(--color-primary-subtle); color: var(--color-primary); }
+    .hist-card { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: var(--sp-4); margin-bottom: var(--sp-3); }
+    .page-footer-lite { border-top: 1px solid var(--color-border); padding: var(--sp-6) 0; margin-top: var(--sp-12); text-align: center; font-size: var(--text-sm); color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      const theme  = localStorage.getItem('driveease_theme')  || 'light';
+      const accent = localStorage.getItem('driveease_accentColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-accent', accent);
+      const ACCENT = { blue:{p:'#1A6BF5',d:'#1250C2',l:'#4D8EFF',s:'#EBF1FF'}, red:{p:'#EF4444',d:'#DC2626',l:'#F87171',s:'#FEF2F2'}, orange:{p:'#F97316',d:'#EA580C',l:'#FB923C',s:'#FFF7ED'} };
+      const c = ACCENT[accent] || ACCENT.blue, r = document.documentElement;
+      r.style.setProperty('--color-primary', c.p); r.style.setProperty('--color-primary-dark', c.d);
+      r.style.setProperty('--color-primary-light', c.l); r.style.setProperty('--color-primary-subtle', c.s);
+    })();
+  </script>
+
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Navigasi Utama">
+    <div class="container">
+      <a href="index.html" class="navbar__brand"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+      <ul class="navbar__links" role="list">
+        <li><a href="index.html" class="nav-link">Beranda</a></li>
+        <li><a href="layanan.html" class="nav-link">Layanan</a></li>
+        <li><a href="tracking.html" class="nav-link">Tracking</a></li>
+      </ul>
+      <div class="navbar__actions">
+        <button class="btn-icon" data-navbar-theme aria-label="Tema" style="width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;background:transparent;color:var(--color-text-muted);"><i class="fa-solid fa-moon"></i></button>
+        <div id="navAuthArea" class="flex items-center gap-3">
+          <div id="navGuest" class="flex items-center gap-2"><a href="login.html" class="btn btn-ghost btn-sm">Masuk</a><a href="login.html#register" class="btn btn-primary btn-sm">Daftar</a></div>
+          <div id="navUser" class="hidden flex items-center gap-3">
+            <a href="tracking.html" class="btn-icon" id="navBookingBadge" style="position:relative;display:none;"><i class="fa-solid fa-bell"></i><span id="navBadgeCount" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;background:var(--color-danger);color:#fff;border-radius:99px;font-size:10px;display:flex;align-items:center;justify-content:center;">0</span></a>
+            <div class="dropdown" id="navAvatarDropdown">
+              <button type="button" id="navAvatarBtn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;" aria-expanded="false">
+                <img id="navAvatar" class="nav-avatar" width="36" height="36" src="" alt="" />
+                <span id="navUserName" class="font-semibold text-sm hide-mobile">User</span>
+                <i class="fa-solid fa-chevron-down hide-mobile" style="font-size:11px;color:var(--color-text-muted);"></i>
+              </button>
+              <div class="dropdown-menu" id="navDropdownMenu">
+                <a href="profil.html" class="dropdown-item"><i class="fa-solid fa-user"></i> Profil</a>
+                <a href="tracking.html" class="dropdown-item"><i class="fa-solid fa-location-dot"></i> Tracking</a>
+                <div class="dropdown-divider"></div>
+                <button type="button" class="dropdown-item danger" id="navLogoutBtn" style="width:100%;text-align:left;"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-drawer-overlay" id="navOverlay"></div>
+  <aside class="nav-drawer" id="navDrawer" hidden>
+    <a href="index.html" class="navbar__brand" style="margin-bottom:var(--sp-4);"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+    <div id="drawerUserStrip" class="hidden flex items-center gap-3" style="padding:var(--sp-3);background:var(--color-surface);border-radius:var(--radius-md);margin-bottom:var(--sp-4);">
+      <img id="drawerAvatar" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+      <div><div id="drawerName" class="font-semibold text-sm"></div><div id="drawerEmail" class="text-xs text-muted"></div></div>
+    </div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--sp-1);">
+      <li><a href="index.html" class="nav-link" style="display:block;padding:var(--sp-3);">Beranda</a></li>
+      <li><a href="layanan.html" class="nav-link" style="display:block;padding:var(--sp-3);">Layanan</a></li>
+      <li><a href="tracking.html" class="nav-link" style="display:block;padding:var(--sp-3);">Tracking</a></li>
+      <li><a href="profil.html" class="nav-link" style="display:block;padding:var(--sp-3);">Profil</a></li>
+    </ul>
+    <hr class="divider" />
+    <label class="toggle-switch" style="padding:var(--sp-2);"><input type="checkbox" data-theme-toggle /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">Mode Gelap</span></label>
+    <hr class="divider" />
+    <div id="drawerGuestActions" class="flex-col gap-2"><a href="login.html" class="btn btn-primary" style="text-align:center;">Masuk</a></div>
+    <button type="button" id="drawerLogoutBtn" class="hidden btn btn-danger btn-sm" style="margin-top:auto;">Keluar</button>
+  </aside>
+
+  <main class="page-main container">
+    <h1 class="font-display" style="font-size:var(--text-2xl);margin-bottom:var(--sp-6);">Profil</h1>
+    <div class="profil-wrap">
+      <aside class="profil-side">
+        <div class="profil-avatar-wrap">
+          <img id="sideAvatar" src="" alt="" />
+          <input type="file" id="avatarInput" accept="image/*" class="sr-only" />
+          <button type="button" class="btn btn-ghost btn-sm" style="margin-top:var(--sp-2);" id="btnAvatarPick"><i class="fa-solid fa-camera"></i> Ganti foto</button>
+        </div>
+        <div class="text-center">
+          <div class="font-display font-bold" id="sideName">—</div>
+          <div class="badge badge-primary" style="margin-top:var(--sp-2);">Member</div>
+        </div>
+        <nav class="profil-nav" aria-label="Menu profil">
+          <button type="button" class="profil-tab active" data-sec="data"><i class="fa-solid fa-user"></i> Data saya</button>
+          <button type="button" class="profil-tab" data-sec="riwayat"><i class="fa-solid fa-clock-rotate-left"></i> Riwayat</button>
+          <button type="button" class="profil-tab" data-sec="bayar"><i class="fa-solid fa-credit-card"></i> Pembayaran</button>
+          <button type="button" class="profil-tab" data-sec="settings"><i class="fa-solid fa-gear"></i> Pengaturan</button>
+          <button type="button" class="text-danger" id="btnOpenDelete" style="width:100%;text-align:left;padding:var(--sp-3) var(--sp-4);border:none;background:transparent;cursor:pointer;font-size:var(--text-sm);color:var(--color-danger);border-radius:var(--radius-sm);"><i class="fa-solid fa-trash"></i> Hapus akun</button>
+        </nav>
+      </aside>
+
+      <div>
+        <section id="sec-data" class="profil-section profil-card active">
+          <h2 class="font-display" style="font-size:var(--text-xl);margin-bottom:var(--sp-6);">Data saya</h2>
+          <form id="formProfile" class="flex-col gap-4">
+            <div class="grid-2">
+              <div class="form-group"><label class="form-label" for="pfName">Nama lengkap</label><input id="pfName" class="input-field" required /></div>
+              <div class="form-group"><label class="form-label" for="pfEmail">Email</label><input id="pfEmail" type="email" class="input-field" required /></div>
+              <div class="form-group"><label class="form-label" for="pfPhone">No. HP</label><input id="pfPhone" class="input-field" required /></div>
+              <div class="form-group"><label class="form-label" for="pfBirth">Tanggal lahir</label><input id="pfBirth" type="date" class="input-field" /></div>
+            </div>
+            <div class="form-group"><label class="form-label" for="pfGender">Jenis kelamin</label>
+              <select id="pfGender" class="input-field"><option value="">—</option><option value="male">Laki-laki</option><option value="female">Perempuan</option></select>
+            </div>
+            <div class="form-group"><label class="form-label" for="pfAddr">Alamat</label><textarea id="pfAddr" class="input-field" rows="3"></textarea></div>
+            <button type="submit" class="btn btn-primary">Simpan perubahan</button>
+          </form>
+        </section>
+
+        <section id="sec-riwayat" class="profil-section profil-card">
+          <h2 class="font-display" style="font-size:var(--text-xl);margin-bottom:var(--sp-4);">Riwayat pemesanan</h2>
+          <div class="tab-nav tab-pills" style="margin-bottom:var(--sp-6);">
+            <button type="button" class="tab-btn active" data-hist="all">Semua</button>
+            <button type="button" class="tab-btn" data-hist="active">Aktif</button>
+            <button type="button" class="tab-btn" data-hist="completed">Selesai</button>
+            <button type="button" class="tab-btn" data-hist="cancelled">Dibatalkan</button>
+          </div>
+          <div id="histList"></div>
+        </section>
+
+        <section id="sec-bayar" class="profil-section profil-card">
+          <h2 class="font-display" style="font-size:var(--text-xl);margin-bottom:var(--sp-6);">Metode pembayaran</h2>
+          <div class="hist-card flex justify-between items-center"><span><i class="fa-brands fa-cc-visa"></i> Visa •••• 4242</span><button type="button" class="btn btn-ghost btn-sm text-danger">Hapus</button></div>
+          <div class="hist-card flex justify-between items-center"><span><i class="fa-solid fa-building-columns"></i> BCA VA •••7890</span><button type="button" class="btn btn-ghost btn-sm text-danger">Hapus</button></div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnAddPay"><i class="fa-solid fa-plus"></i> Tambah metode</button>
+        </section>
+
+        <section id="sec-settings" class="profil-section profil-card">
+          <h2 class="font-display" style="font-size:var(--text-xl);margin-bottom:var(--sp-6);">Pengaturan</h2>
+          <h3 class="text-sm font-bold text-muted" style="margin-bottom:var(--sp-3);">TAMPILAN</h3>
+          <label class="toggle-switch" style="margin-bottom:var(--sp-4);">
+            <input type="checkbox" id="profilDarkToggle" data-theme-toggle aria-label="Mode gelap" />
+            <div class="toggle-track"><div class="toggle-thumb"></div></div>
+            <span class="toggle-label">Mode gelap</span>
+          </label>
+          <p class="text-sm font-bold text-muted" style="margin:var(--sp-6) 0 var(--sp-3);">Warna tema</p>
+          <div class="accent-row" style="margin-bottom:var(--sp-6);">
+            <label data-accent-option="blue"><input type="radio" name="accentPick" value="blue" /> Biru</label>
+            <label data-accent-option="red"><input type="radio" name="accentPick" value="red" /> Merah</label>
+            <label data-accent-option="orange"><input type="radio" name="accentPick" value="orange" /> Oranye</label>
+          </div>
+          <h3 class="text-sm font-bold text-muted" style="margin-bottom:var(--sp-3);">NOTIFIKASI</h3>
+          <label class="toggle-switch" style="margin-bottom:var(--sp-3);"><input type="checkbox" id="notifOrder" /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">Status pemesanan</span></label>
+          <label class="toggle-switch" style="margin-bottom:var(--sp-3);"><input type="checkbox" id="notifEmail" /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">Email newsletter</span></label>
+          <label class="toggle-switch" style="margin-bottom:var(--sp-6);"><input type="checkbox" id="notifWa" /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">WhatsApp update</span></label>
+          <h3 class="text-sm font-bold text-muted" style="margin-bottom:var(--sp-3);">AKUN</h3>
+          <div class="form-group"><label class="form-label" for="pfCurPw">Password saat ini</label><input type="password" id="pfCurPw" class="input-field" autocomplete="current-password" /></div>
+          <div class="form-group"><label class="form-label" for="pfNewPw">Password baru</label><input type="password" id="pfNewPw" class="input-field" autocomplete="new-password" /></div>
+          <div class="form-group"><label class="form-label" for="pfNewPw2">Konfirmasi password baru</label><input type="password" id="pfNewPw2" class="input-field" autocomplete="new-password" /></div>
+          <button type="button" class="btn btn-secondary btn-sm" id="btnChangePw">Ganti password</button>
+        </section>
+      </div>
+    </div>
+
+    <footer class="page-footer-lite">© 2026 DriveEase</footer>
+  </main>
+
+  <div class="modal-overlay" id="delModal" role="dialog" aria-modal="true">
+    <div class="modal-content modal-sm">
+      <div class="modal-header"><h3>Hapus akun</h3><button type="button" class="modal-close" id="delModalClose" aria-label="Tutup"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="modal-body"><p class="text-sm text-muted">Tindakan ini menghapus data akun lokal (prototype). Lanjutkan?</p></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost btn-sm" id="delModalCancel">Batal</button>
+        <button type="button" class="btn btn-danger btn-sm" id="delModalOk">Hapus akun</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="assets/js/pages/profil.js"></script>
+</body>
+</html>

@@ -169,7 +169,8 @@ function checkAuth() {
   const isProtected = PROTECTED_PAGES.some(p => page.includes(p));
 
   if (isProtected && !Storage.isLoggedIn()) {
-    window.location.href = `login.html?returnUrl=${encodeURIComponent(page)}`;
+    const returnTarget = `${page}${window.location.search || ''}`;
+    window.location.href = `login.html?returnUrl=${encodeURIComponent(returnTarget)}`;
     return false;
   }
   return true;
@@ -230,6 +231,7 @@ function deleteAccount() {
 /* ── Init: wire login/register form if present ───────────────── */
 
 function initLoginPage() {
+  Storage.seedIfEmpty();
   restoreSession();
 
   if (Storage.isLoggedIn()) {
@@ -300,7 +302,8 @@ function initLoginPage() {
     }
 
     showToast('success', 'Akun Dibuat!', 'Selamat bergabung di DriveEase.');
-    setTimeout(() => { window.location.href = 'index.html'; }, 800);
+    const retAfterReg = new URLSearchParams(window.location.search).get('returnUrl');
+    setTimeout(() => { window.location.href = retAfterReg || 'index.html'; }, 800);
   });
 
   /* Password show/hide toggles */

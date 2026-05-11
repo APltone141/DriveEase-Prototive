@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tracking — DriveEase</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="assets/css/global.css" />
+  <link rel="stylesheet" href="assets/css/themes.css" />
+  <link rel="stylesheet" href="assets/css/components.css" />
+  <link rel="stylesheet" href="assets/css/animations.css" />
+  <style>
+    .page-main { padding-top: 88px; padding-bottom: var(--sp-16); }
+    .track-head { margin-bottom: var(--sp-6); }
+    .track-tabs { display: flex; gap: var(--sp-2); flex-wrap: wrap; border-bottom: 2px solid var(--color-border); margin-bottom: var(--sp-6); }
+    .track-tab { padding: var(--sp-3) var(--sp-4); font-weight: 600; font-size: var(--text-sm); color: var(--color-text-muted); background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; }
+    .track-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
+    .track-layout { display: grid; grid-template-columns: 1fr min(400px, 100%); gap: var(--sp-8); align-items: start; }
+    @media (max-width: 960px) { .track-layout { grid-template-columns: 1fr; } }
+    #map { height: 380px; border-radius: var(--radius-lg); border: 1px solid var(--color-border); z-index: 1; }
+    .booking-select { margin-bottom: var(--sp-4); }
+    .detail-booking-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--sp-6); background: var(--color-bg); }
+    .page-footer-lite { border-top: 1px solid var(--color-border); padding: var(--sp-6) 0; margin-top: var(--sp-12); text-align: center; font-size: var(--text-sm); color: var(--color-text-muted); }
+  </style>
+</head>
+<body>
+  <script>
+    (function () {
+      const theme  = localStorage.getItem('driveease_theme')  || 'light';
+      const accent = localStorage.getItem('driveease_accentColor') || 'blue';
+      document.documentElement.setAttribute('data-theme', theme);
+      document.documentElement.setAttribute('data-accent', accent);
+      const ACCENT = { blue:{p:'#1A6BF5',d:'#1250C2',l:'#4D8EFF',s:'#EBF1FF'}, red:{p:'#EF4444',d:'#DC2626',l:'#F87171',s:'#FEF2F2'}, orange:{p:'#F97316',d:'#EA580C',l:'#FB923C',s:'#FFF7ED'} };
+      const c = ACCENT[accent] || ACCENT.blue, r = document.documentElement;
+      r.style.setProperty('--color-primary', c.p); r.style.setProperty('--color-primary-dark', c.d);
+      r.style.setProperty('--color-primary-light', c.l); r.style.setProperty('--color-primary-subtle', c.s);
+    })();
+  </script>
+
+  <nav class="navbar" id="navbar" role="navigation" aria-label="Navigasi Utama">
+    <div class="container">
+      <a href="index.html" class="navbar__brand"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+      <ul class="navbar__links" role="list">
+        <li><a href="index.html" class="nav-link">Beranda</a></li>
+        <li><a href="layanan.html" class="nav-link">Layanan</a></li>
+        <li><a href="tracking.html" class="nav-link">Tracking</a></li>
+      </ul>
+      <div class="navbar__actions">
+        <button class="btn-icon" data-navbar-theme aria-label="Tema" style="width:36px;height:36px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;background:transparent;color:var(--color-text-muted);"><i class="fa-solid fa-moon"></i></button>
+        <div id="navAuthArea" class="flex items-center gap-3">
+          <div id="navGuest" class="flex items-center gap-2"><a href="login.html" class="btn btn-ghost btn-sm">Masuk</a><a href="login.html#register" class="btn btn-primary btn-sm">Daftar</a></div>
+          <div id="navUser" class="hidden flex items-center gap-3">
+            <a href="tracking.html" class="btn-icon" id="navBookingBadge" style="position:relative;display:none;"><i class="fa-solid fa-bell"></i><span id="navBadgeCount" style="position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;background:var(--color-danger);color:#fff;border-radius:99px;font-size:10px;display:flex;align-items:center;justify-content:center;">0</span></a>
+            <div class="dropdown" id="navAvatarDropdown">
+              <button type="button" id="navAvatarBtn" style="background:none;border:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:0;" aria-expanded="false">
+                <img id="navAvatar" class="nav-avatar" width="36" height="36" src="https://i.pravatar.cc/150?img=3" alt="" />
+                <span id="navUserName" class="font-semibold text-sm hide-mobile">User</span>
+                <i class="fa-solid fa-chevron-down hide-mobile" style="font-size:11px;color:var(--color-text-muted);"></i>
+              </button>
+              <div class="dropdown-menu" id="navDropdownMenu">
+                <a href="profil.html" class="dropdown-item"><i class="fa-solid fa-user"></i> Profil</a>
+                <a href="tracking.html" class="dropdown-item"><i class="fa-solid fa-location-dot"></i> Tracking</a>
+                <div class="dropdown-divider"></div>
+                <button type="button" class="dropdown-item danger" id="navLogoutBtn" style="width:100%;text-align:left;"><i class="fa-solid fa-right-from-bracket"></i> Keluar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="hamburger" id="hamburger" aria-label="Menu"><span></span><span></span><span></span></button>
+      </div>
+    </div>
+  </nav>
+  <div class="nav-drawer-overlay" id="navOverlay"></div>
+  <aside class="nav-drawer" id="navDrawer" hidden>
+    <a href="index.html" class="navbar__brand" style="margin-bottom:var(--sp-4);"><i class="fa-solid fa-car-side"></i> Drive<span>Ease</span></a>
+    <div id="drawerUserStrip" class="hidden flex items-center gap-3" style="padding:var(--sp-3);background:var(--color-surface);border-radius:var(--radius-md);margin-bottom:var(--sp-4);">
+      <img id="drawerAvatar" alt="" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />
+      <div><div id="drawerName" class="font-semibold text-sm"></div><div id="drawerEmail" class="text-xs text-muted"></div></div>
+    </div>
+    <ul style="list-style:none;display:flex;flex-direction:column;gap:var(--sp-1);">
+      <li><a href="index.html" class="nav-link" style="display:block;padding:var(--sp-3);">Beranda</a></li>
+      <li><a href="layanan.html" class="nav-link" style="display:block;padding:var(--sp-3);">Layanan</a></li>
+      <li><a href="tracking.html" class="nav-link" style="display:block;padding:var(--sp-3);">Tracking</a></li>
+      <li><a href="profil.html" class="nav-link" style="display:block;padding:var(--sp-3);">Profil</a></li>
+    </ul>
+    <hr class="divider" />
+    <label class="toggle-switch" style="padding:var(--sp-2);"><input type="checkbox" data-theme-toggle /><div class="toggle-track"><div class="toggle-thumb"></div></div><span class="toggle-label">Mode Gelap</span></label>
+    <hr class="divider" />
+    <div id="drawerGuestActions" class="flex-col gap-2"><a href="login.html" class="btn btn-primary" style="text-align:center;">Masuk</a></div>
+    <button type="button" id="drawerLogoutBtn" class="hidden btn btn-danger btn-sm" style="margin-top:auto;">Keluar</button>
+  </aside>
+
+  <main class="page-main container">
+    <div class="track-head">
+      <h1 class="font-display" style="font-size:var(--text-3xl);">Status Pemesanan</h1>
+      <p class="text-muted text-sm">Pantau timeline dan lokasi armada (simulasi).</p>
+    </div>
+
+    <div class="track-tabs" role="tablist">
+      <button type="button" class="track-tab active" data-filter="aktif">Aktif</button>
+      <button type="button" class="track-tab" data-filter="menunggu">Menunggu</button>
+      <button type="button" class="track-tab" data-filter="selesai">Selesai</button>
+      <button type="button" class="track-tab" data-filter="batal">Dibatalkan</button>
+    </div>
+
+    <div class="form-group booking-select">
+      <label class="form-label" for="bookingPick">Pilih pesanan</label>
+      <select id="bookingPick" class="input-field"></select>
+    </div>
+
+    <div class="track-layout">
+      <div>
+        <div class="card-base" style="padding:var(--sp-6);margin-bottom:var(--sp-6);">
+          <div class="flex justify-between flex-wrap gap-2">
+            <div>
+              <div class="text-sm text-muted">No. pesanan</div>
+              <div class="font-mono font-bold text-primary" id="dispBookingId">—</div>
+            </div>
+            <span class="badge badge-warning" id="dispStatus">—</span>
+          </div>
+          <h2 class="font-display" style="font-size:var(--text-xl);margin-top:var(--sp-4);" id="dispCarTitle">—</h2>
+          <p class="text-sm text-muted" id="dispCarSub">—</p>
+        </div>
+        <h3 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Timeline</h3>
+        <div class="stepper-vertical" id="timeline"></div>
+      </div>
+      <div>
+        <h3 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Peta lokasi</h3>
+        <div id="map" aria-label="Peta"></div>
+        <div class="detail-booking-card" style="margin-top:var(--sp-6);">
+          <h4 class="font-semibold" style="margin-bottom:var(--sp-4);">Detail pesanan</h4>
+          <div id="detailCardBody" class="text-sm text-muted" style="line-height:1.8;"></div>
+          <div class="flex gap-2 flex-wrap" style="margin-top:var(--sp-4);">
+            <button type="button" class="btn btn-ghost btn-sm" id="btnInvoice"><i class="fa-solid fa-file-invoice"></i> Invoice</button>
+            <button type="button" class="btn btn-danger btn-sm" id="btnCancelBooking"><i class="fa-solid fa-xmark"></i> Batalkan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="page-footer-lite">© 2026 DriveEase</footer>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script type="module" src="assets/js/pages/tracking.js"></script>
+</body>
+</html>
