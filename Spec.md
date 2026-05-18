@@ -106,7 +106,7 @@ driveease/
 │           └── profil.js       # Script profil pengguna
 │
 └── components/
-    └── navbar.html             # Snippet navbar (referensi copy-paste)
+    └── navbar.html             # Snippet navbar
 ```
 
 ---

@@ -58,6 +58,30 @@
       .stats-bar .container { grid-template-columns: repeat(2, 1fr); }
       .home-hero__search-wrap { margin-top: var(--sp-4); }
     }
+    .about-layanan__intro { max-width: 520px; }
+    .about-layanan__intro h2 { font-family: var(--font-display); font-size: var(--text-3xl); margin-bottom: var(--sp-4); color: var(--color-text); }
+    .about-layanan__intro p { font-size: var(--text-base); line-height: 1.75; margin-bottom: var(--sp-4); }
+    .about-layanan__layout {
+      display: grid; grid-template-columns: 1fr 1.2fr; gap: var(--sp-12); align-items: start;
+    }
+    @media (max-width: 900px) { .about-layanan__layout { grid-template-columns: 1fr; gap: var(--sp-8); } }
+    .service-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-4); }
+    @media (max-width: 520px) { .service-grid { grid-template-columns: 1fr; } }
+    .service-card {
+      display: flex; gap: var(--sp-4); align-items: flex-start;
+      padding: var(--sp-4); background: var(--color-bg); border: 1px solid var(--color-border);
+      border-radius: var(--radius-md); transition: border-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
+    }
+    .service-card:hover {
+      border-color: var(--color-primary-light); box-shadow: var(--shadow-md); transform: translateY(-4px);
+    }
+    .service-card__icon {
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: var(--radius-sm);
+      background: var(--color-primary-subtle); color: var(--color-primary);
+      display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+    }
+    .service-card h3 { font-size: var(--text-base); font-weight: 700; color: var(--color-text); margin-bottom: var(--sp-1); }
+    .service-card p { font-size: var(--text-sm); color: var(--color-text-muted); line-height: 1.5; margin: 0; }
   </style>
 </head>
 <body>
@@ -244,6 +268,64 @@
         <div class="stat-item reveal stagger-3">
           <h3><span class="js-stat-counter" data-target="50000" data-suffix="+">0</span></h3>
           <p><i class="fa-solid fa-receipt" aria-hidden="true"></i> Pesanan</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="aboutLayanan" aria-labelledby="aboutLayananTitle">
+      <div class="container about-layanan__layout">
+        <div class="about-layanan__intro reveal">
+          <h2 id="aboutLayananTitle" class="font-display">Tentang DriveEase</h2>
+          <p>DriveEase hadir sebagai platform sewa mobil modern yang menghubungkan Anda dengan armada terpercaya di puluhan kota Indonesia. Kami berkomitmen pada harga transparan, proses pemesanan yang mudah, dan dukungan pelanggan 24 jam.</p>
+          <p>Dari perjalanan bisnis hingga liburan keluarga, tim kami memastikan setiap unit terawat, terasuransi, dan siap mengantar perjalanan Anda dengan nyaman dan aman.</p>
+          <a href="layanan.html" class="btn btn-primary">Jelajahi armada</a>
+        </div>
+        <div class="reveal stagger-1">
+          <h3 class="font-display" style="font-size:var(--text-xl);margin-bottom:var(--sp-6);color:var(--color-text);">Layanan kami</h3>
+          <div class="service-grid">
+            <article class="service-card reveal">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-key"></i></div>
+              <div>
+                <h3>Self Drive</h3>
+                <p>Sewa lepas kunci untuk fleksibilitas penuh. Cocok untuk perjalanan mandiri dengan SIM valid.</p>
+              </div>
+            </article>
+            <article class="service-card reveal stagger-1">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-user-tie"></i></div>
+              <div>
+                <h3>Dengan Sopir</h3>
+                <p>Driver berpengalaman siap mengantar Anda ke tujuan dengan aman dan tepat waktu.</p>
+              </div>
+            </article>
+            <article class="service-card reveal stagger-2">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-plane-arrival"></i></div>
+              <div>
+                <h3>Airport Transfer</h3>
+                <p>Penjemputan dan pengantaran bandara dengan jadwal yang disesuaikan penerbangan Anda.</p>
+              </div>
+            </article>
+            <article class="service-card reveal stagger-3">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-building"></i></div>
+              <div>
+                <h3>Corporate</h3>
+                <p>Paket sewa korporat untuk kebutuhan bisnis, rapat, dan operasional kantor harian.</p>
+              </div>
+            </article>
+            <article class="service-card reveal stagger-4">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-camera"></i></div>
+              <div>
+                <h3>Photoshoot</h3>
+                <p>Unit premium untuk kebutuhan produksi, iklan, dan sesi foto dengan durasi fleksibel.</p>
+              </div>
+            </article>
+            <article class="service-card reveal">
+              <div class="service-card__icon" aria-hidden="true"><i class="fa-solid fa-umbrella-beach"></i></div>
+              <div>
+                <h3>Wisata Paket</h3>
+                <p>Paket wisata lengkap dengan mobil dan rute populer ke destinasi favorit Anda.</p>
+              </div>
+            </article>
+          </div>
         </div>
       </div>
     </section>

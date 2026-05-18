@@ -150,7 +150,7 @@ const CARS_DATA = [
     featured:        true,
     badge:           'Premium',
     images: [
-      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+      'https://www.carscoops.com/wp-content/uploads/2024/05/2024-Mitsubishi-Pajero-Sport-GSR-Australia-1s.jpg',
       'https://images.unsplash.com/photo-1471444928139-48c5bf5173f8?w=800&q=80',
     ],
     specs: {
@@ -276,8 +276,8 @@ const CARS_DATA = [
     featured:        false,
     badge:           'Terlaris',
     images: [
-      'https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80',
-      'https://images.unsplash.com/photo-1502877338535-766e1452684a?w=800&q=80',
+      'https://asset.honda-indonesia.com/variants/images/z3IlBtUoQMWNV5YTY13qjt1mt9D8uBUbmRrYVTI5.png',
+      'https://asset.honda-indonesia.com/variants/images/mWtZtMRT42Cf6o4KdCBTDAtLyLDurQvqg8pkWC4g.png',
     ],
     specs: {
       engine:    '1.2L i-VTEC',
