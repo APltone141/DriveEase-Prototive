@@ -1,6 +1,12 @@
 import { initNavbar } from '../core/navbar.js';
 import { getParam, buildQuery, showToast } from '../core/router.js';
 import { CARS_DATA, getCarById, formatPrice, getStartingPrice } from '../data/cars.js';
+import {
+  rentalDays,
+  calcRentalQuote,
+  resolveTierSlug,
+  DRIVER_FEE_PER_DAY,
+} from '../data/pricing.js';
 
 const RULES = [
   'Usia pengemudi minimal 21 tahun.',
@@ -11,10 +17,6 @@ const RULES = [
   'Keterlambatan pengembalian dikenakan biaya Rp 100.000 per jam.',
   'Kerusakan ditanggung sesuai estimasi bengkel resmi.',
 ];
-
-function pkgSlug(name) {
-  return name.toLowerCase().replace(/\s+/g, '');
-}
 
 function getWishlist() {
   try {
@@ -124,12 +126,7 @@ function renderSpecs(car) {
     ['USB', s.usb ? 'Ya' : 'Tidak'],
     ['GPS', s.gps ? 'Ya' : 'Tidak'],
   ];
-  table.innerHTML = rows
-    .map(
-      ([k, v]) => `
-    <tr><th>${k}</th><td>${v}</td></tr>`
-    )
-    .join('');
+  table.innerHTML = rows.map(([k, v]) => `<tr><th>${k}</th><td>${v}</td></tr>`).join('');
 }
 
 function renderPackages(car) {
@@ -141,77 +138,95 @@ function renderPackages(car) {
   grid.innerHTML = pkgs
     .map(
       p => `
-      <div class="pkg-card">
-        <div class="font-display" style="font-weight:700;font-size:var(--text-lg);">${p.name}</div>
-        <div class="text-sm text-muted" style="margin:var(--sp-1) 0;">${p.duration}</div>
-        <div class="car-card__price" style="margin:var(--sp-3) 0;">${formatPrice(p.price)}</div>
+      <div class="pkg-card ${p.id === 'vip' ? 'pkg-card--vip' : ''}">
+        <div class="flex justify-between items-center flex-wrap gap-2">
+          <div class="font-display" style="font-weight:700;font-size:var(--text-lg);">${p.name}</div>
+          ${p.driverDiscountPercent === 100 ? '<span class="badge badge-primary">Sopir gratis</span>' : ''}
+        </div>
+        <p class="text-sm text-muted" style="margin:var(--sp-2) 0;">${p.tagline || ''}</p>
+        <div class="car-card__price" style="margin:var(--sp-3) 0;">${formatPrice(p.pricePerDay)}<span style="font-size:var(--text-sm);font-weight:400;color:var(--color-text-muted);">/hari</span></div>
         <ul class="text-sm text-muted" style="padding-left:1.1rem;list-style:disc;margin-bottom:var(--sp-4);">
-          <li>Bensin tidak termasuk</li>
-          <li>Asuransi dasar</li>
+          ${(p.features || []).map(f => `<li>${f}</li>`).join('')}
         </ul>
-        <button type="button" class="btn btn-primary btn-sm pkg-pick" data-name="${p.name}" style="width:100%;">Pilih paket ini</button>
+        <button type="button" class="btn btn-primary btn-sm pkg-pick" data-tier-id="${p.id}" style="width:100%;">Pilih ${p.name}</button>
       </div>`
     )
     .join('');
 
-  select.innerHTML = pkgs.map(p => `<option value="${p.name}">${p.name} — ${formatPrice(p.price)}</option>`).join('');
+  select.innerHTML = pkgs
+    .map(p => `<option value="${p.id}">${p.name} — ${formatPrice(p.pricePerDay)}/hari</option>`)
+    .join('');
 
   grid.querySelectorAll('.pkg-pick').forEach(btn => {
     btn.addEventListener('click', () => {
-      select.value = btn.dataset.name;
+      select.value = btn.dataset.tierId;
       select.dispatchEvent(new Event('change'));
     });
   });
 }
 
-function selectedPackagePrice(car) {
-  const select = document.getElementById('sidebarPackage');
-  const name = select?.value;
-  const pkg = car.packages?.find(p => p.name === name);
-  return pkg ? pkg.price : getStartingPrice(car);
-}
+function syncDriverLabel(car) {
+  const pkg = car.packages?.find(p => p.id === document.getElementById('sidebarPackage')?.value);
+  const hint = document.getElementById('sidebarDriverHint');
+  const label = document.getElementById('sidebarDriverLabel');
+  if (!pkg) return;
 
-function rentalDays(pickStr, dropStr) {
-  if (!pickStr || !dropStr) return 1;
-  const pick = new Date(pickStr + 'T12:00:00');
-  const drop = new Date(dropStr + 'T12:00:00');
-  const diff = (drop - pick) / 86400000;
-  if (diff < 0) return -1;
-  return Math.max(1, Math.round(diff));
+  if (label) {
+    if (pkg.driverDiscountPercent === 100) {
+      label.textContent = `Dengan sopir (gratis — diskon 100% paket ${pkg.name})`;
+    } else {
+      label.textContent = `Dengan sopir (+${formatPrice(DRIVER_FEE_PER_DAY)}/hari)`;
+    }
+  }
+  if (hint) {
+    hint.textContent = pkg.driverDiscountPercent === 100
+      ? 'Centang untuk sopir profesional tanpa biaya tambahan.'
+      : 'Opsional. Biaya sopir dihitung per hari sewa.';
+  }
 }
 
 function updateEstimate(car) {
   const pick = document.getElementById('sidebarPickup')?.value;
   const drop = document.getElementById('sidebarDrop')?.value;
   const withDriver = document.getElementById('sidebarWithDriver')?.checked;
+  const tierId = document.getElementById('sidebarPackage')?.value;
 
   const days = rentalDays(pick, drop);
   const subEl = document.getElementById('lineSubtotal');
   const insEl = document.getElementById('lineInsurance');
   const drvEl = document.getElementById('lineDriver');
   const totEl = document.getElementById('lineTotal');
-  const drvRow = document.getElementById('lineDriverRow');
+  const daysEl = document.getElementById('lineDays');
+  const rateEl = document.getElementById('lineRate');
 
   if (days < 0) {
     showToast('error', 'Tanggal', 'Tanggal drop harus setelah pickup.');
-    if (subEl) subEl.textContent = '—';
-    if (insEl) insEl.textContent = '—';
-    if (drvEl) drvEl.textContent = '—';
-    if (totEl) totEl.textContent = '—';
+    [subEl, insEl, drvEl, totEl, daysEl, rateEl].forEach(el => { if (el) el.textContent = '—'; });
     return;
   }
 
-  const pkgPrice = selectedPackagePrice(car);
-  const subtotal = pkgPrice * days;
-  const insuranceFee = 50000 * days;
-  const driverFee = withDriver ? 200000 * days : 0;
-  const total = subtotal + insuranceFee + driverFee;
+  const quote = calcRentalQuote(car, {
+    tierId,
+    days,
+    withDriver,
+    insuranceType: 'basic',
+    deposit: 0,
+  });
 
-  if (subEl) subEl.textContent = formatPrice(subtotal);
-  if (insEl) insEl.textContent = formatPrice(insuranceFee);
-  if (drvEl) drvEl.textContent = withDriver ? formatPrice(driverFee) : formatPrice(0);
-  if (drvRow) drvRow.style.display = withDriver ? 'flex' : 'flex';
-  if (totEl) totEl.textContent = formatPrice(total);
+  if (daysEl) daysEl.textContent = `${days} hari`;
+  if (rateEl) rateEl.textContent = `${formatPrice(quote.perDayRate)}/hari`;
+  if (subEl) subEl.textContent = formatPrice(quote.subtotal);
+  if (insEl) insEl.textContent = formatPrice(quote.insurance);
+  if (drvEl) {
+    if (withDriver && quote.driverDiscountPercent === 100 && quote.driverGross > 0) {
+      drvEl.innerHTML = `<span style="text-decoration:line-through;color:var(--color-text-muted);margin-right:6px;">${formatPrice(quote.driverGross)}</span> ${formatPrice(0)}`;
+    } else {
+      drvEl.textContent = formatPrice(quote.driver);
+    }
+  }
+  if (totEl) totEl.textContent = formatPrice(quote.total);
+
+  syncDriverLabel(car);
 }
 
 function wireBooking(car) {
@@ -230,9 +245,11 @@ function wireBooking(car) {
   if (dropEl && !dropEl.value) dropEl.value = t1s;
 
   const urlPkg = getParam('package');
-  if (urlPkg && pkgEl) {
-    const match = car.packages?.find(p => pkgSlug(p.name) === urlPkg.toLowerCase());
-    if (match) pkgEl.value = match.name;
+  const resolved = resolveTierSlug(car, urlPkg);
+  if (resolved && pkgEl) pkgEl.value = resolved.id;
+  else if (pkgEl) {
+    const reg = car.packages?.find(p => p.id === 'reguler');
+    if (reg) pkgEl.value = reg.id;
   }
 
   [pickEl, dropEl, pkgEl, drvEl].forEach(el => {
@@ -247,10 +264,10 @@ function wireBooking(car) {
       e.preventDefault();
       const days = rentalDays(pickEl?.value, dropEl?.value);
       if (days < 0) return;
-      const pkg = pkgEl?.value || car.packages?.[0]?.name;
+      const tierId = pkgEl?.value || 'reguler';
       const q = buildQuery({
         id: car.id,
-        package: pkgSlug(pkg),
+        package: tierId,
         pickup: pickEl?.value,
         drop: dropEl?.value,
         withDriver: drvEl?.checked ? '1' : '0',

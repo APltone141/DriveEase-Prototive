@@ -125,7 +125,7 @@
         <section id="step1" class="checkout-step active card-base" style="padding:var(--sp-6);">
           <h2 class="font-display" style="font-size:var(--text-lg);margin-bottom:var(--sp-4);">Paket &amp; jadwal</h2>
           <div class="car-mini" id="checkoutCarMini"></div>
-          <div class="form-group"><label class="form-label" for="coPackage">Paket sewa</label><select id="coPackage" class="input-field"></select></div>
+          <div class="form-group"><label class="form-label" for="coPackage">Paket fasilitas</label><select id="coPackage" class="input-field"></select></div>
           <div class="grid-2" style="gap:var(--sp-4);">
             <div class="form-group"><label class="form-label" for="coPickupD">Tanggal pickup</label><input type="date" id="coPickupD" class="input-field" required /></div>
             <div class="form-group"><label class="form-label" for="coPickupT">Jam pickup</label><input type="time" id="coPickupT" class="input-field" value="09:00" /></div>
@@ -137,9 +137,11 @@
           </div>
           <div class="form-group"><label class="form-label" for="coAddr">Alamat lengkap</label><textarea id="coAddr" class="input-field" rows="2" required></textarea></div>
           <div class="form-group"><label class="form-label" for="coNotes">Catatan</label><textarea id="coNotes" class="input-field" rows="2"></textarea></div>
-          <div class="form-group"><span class="form-label">Opsi sopir</span>
+          <div class="form-group">
+            <span class="form-label">Opsi sopir</span>
             <label class="radio-group"><input type="radio" name="coDriver" value="0" checked /> Lepas kunci</label>
-            <label class="radio-group"><input type="radio" name="coDriver" value="1" /> Dengan sopir (+Rp 200.000/hari)</label>
+            <label class="radio-group"><input type="radio" name="coDriver" value="1" /> <span id="coDriverLabel">Dengan sopir (+Rp 200.000/hari)</span></label>
+            <p class="form-hint" id="coDriverHint" style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--sp-1);">Paket VIP: diskon sopir 100% jika dipilih.</p>
           </div>
           <div class="step-actions"><a href="layanan.html" class="btn btn-ghost">Batal</a><button type="button" class="btn btn-primary" id="btnStep1">Lanjut</button></div>
         </section>

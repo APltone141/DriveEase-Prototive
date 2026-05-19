@@ -3,6 +3,8 @@
    Dummy product data — 9 mobil
    ============================================================ */
 
+import { getCarPackages, getLowestTierPrice } from './pricing.js';
+
 const CARS_DATA = [
   {
     id:              'car_001',
@@ -35,12 +37,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       false,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 450000 },
-      { name: 'Full Day', duration: '24 jam', price: 550000 },
-      { name: 'Weekend',  duration: '3 hari', price: 1200000 },
-      { name: 'Weekly',   duration: '7 hari', price: 2500000 },
-    ],
     location:    'Jakarta, Surabaya, Bali',
     available:   true,
     description: 'Toyota Innova Zenix generasi terbaru hadir dengan platform TNGA dan mesin hybrid yang efisien. Kabin luas berteknologi tinggi menjadikannya pilihan sempurna untuk perjalanan keluarga maupun bisnis.',
@@ -77,12 +73,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       true,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 500000 },
-      { name: 'Full Day', duration: '24 jam', price: 600000 },
-      { name: 'Weekend',  duration: '3 hari', price: 1350000 },
-      { name: 'Weekly',   duration: '7 hari', price: 2800000 },
-    ],
     location:    'Jakarta, Bandung, Bali',
     available:   true,
     description: 'Honda CR-V Turbo menawarkan perpaduan sempurna antara performa dan kenyamanan. Dilengkapi Honda Sensing dan kabin premium untuk pengalaman berkendara terbaik.',
@@ -119,12 +109,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       false,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 250000 },
-      { name: 'Full Day', duration: '24 jam', price: 300000 },
-      { name: 'Weekend',  duration: '3 hari', price: 700000 },
-      { name: 'Weekly',   duration: '7 hari', price: 1500000 },
-    ],
     location:    'Jakarta, Surabaya, Yogyakarta, Medan',
     available:   true,
     description: 'Toyota Avanza adalah pilihan ekonomis terpercaya untuk perjalanan keluarga. Kapasitas 7 penumpang dengan konsumsi BBM yang efisien menjadikannya favorit di seluruh Indonesia.',
@@ -161,12 +145,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       true,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 750000 },
-      { name: 'Full Day', duration: '24 jam', price: 900000 },
-      { name: 'Weekend',  duration: '3 hari', price: 2200000 },
-      { name: 'Weekly',   duration: '7 hari', price: 4500000 },
-    ],
     location:    'Jakarta, Bali, Lombok',
     available:   true,
     description: 'Mitsubishi Pajero Sport hadir sebagai SUV premium dengan kemampuan off-road yang tangguh. Teknologi Super Select 4WD dan interior mewah membuatnya ideal untuk petualangan maupun acara formal.',
@@ -203,12 +181,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       true,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 650000 },
-      { name: 'Full Day', duration: '24 jam', price: 800000 },
-      { name: 'Weekend',  duration: '3 hari', price: 2000000 },
-      { name: 'Weekly',   duration: '7 hari', price: 4000000 },
-    ],
     location:    'Jakarta, Surabaya, Makassar',
     available:   true,
     description: 'Toyota Fortuner tetap menjadi ikon SUV tangguh dengan kombinasi daya angkut besar, kenyamanan tinggi, dan kemampuan segala medan. Pilihan terpercaya untuk perjalanan jauh.',
@@ -245,12 +217,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       false,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 280000 },
-      { name: 'Full Day', duration: '24 jam', price: 330000 },
-      { name: 'Weekend',  duration: '3 hari', price: 800000 },
-      { name: 'Weekly',   duration: '7 hari', price: 1700000 },
-    ],
     location:    'Jakarta, Bandung, Semarang',
     available:   true,
     description: 'Suzuki Ertiga Smart Hybrid menggabungkan efisiensi bahan bakar terbaik di kelasnya dengan kenyamanan kabin luas. Cocok untuk perjalanan keluarga dengan budget yang lebih hemat.',
@@ -287,12 +253,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       false,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 180000 },
-      { name: 'Full Day', duration: '24 jam', price: 220000 },
-      { name: 'Weekend',  duration: '3 hari', price: 520000 },
-      { name: 'Weekly',   duration: '7 hari', price: 1100000 },
-    ],
     location:    'Jakarta, Bandung, Yogyakarta, Surabaya',
     available:   true,
     description: 'Honda Brio adalah city car lincah yang sempurna untuk mobilitas perkotaan. Dimensi kompak memudahkan parkir di kota padat, sementara konsumsi BBM yang sangat irit menghemat pengeluaran.',
@@ -310,7 +270,7 @@ const CARS_DATA = [
     ac:              true,
     withDriver:      true,
     selfDrive:       false,
-    pricePerDay:     null,
+    pricePerDay:     1500000,
     priceWithDriver: 1500000,
     deposit:         3000000,
     rating:          5.0,
@@ -329,12 +289,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       true,
     },
-    packages: [
-      { name: 'Harian',      duration: '12 jam', price: 1500000 },
-      { name: 'Full Day',    duration: '24 jam', price: 1800000 },
-      { name: 'Airport',     duration: 'Transfer', price: 600000 },
-      { name: 'Event/VVIP',  duration: 'Per event', price: 2500000 },
-    ],
     location:    'Jakarta, Bali',
     available:   true,
     description: 'Toyota Alphard Executive Lounge adalah puncak kemewahan kendaraan MPV. Captain seat premium, sunroof panoramic, dan sistem entertainment canggih untuk pengalaman perjalanan VVIP yang tak terlupakan.',
@@ -371,12 +325,6 @@ const CARS_DATA = [
       usb:       true,
       gps:       false,
     },
-    packages: [
-      { name: 'Harian',   duration: '12 jam', price: 350000 },
-      { name: 'Full Day', duration: '24 jam', price: 420000 },
-      { name: 'Weekend',  duration: '3 hari', price: 1000000 },
-      { name: 'Weekly',   duration: '7 hari', price: 2100000 },
-    ],
     location:    'Jakarta, Surabaya, Palembang',
     available:   true,
     description: 'Mitsubishi Xpander Cross hadir dengan desain cross-over yang agresif dan kabin fleksibel. Sistem suspensi yang handal memberikan kenyamanan optimal di berbagai kondisi jalan.',
@@ -385,8 +333,13 @@ const CARS_DATA = [
 
 /* ── Helper functions ────────────────────────────────────────── */
 
+function enrichCar(car) {
+  if (!car) return null;
+  return { ...car, packages: getCarPackages(car) };
+}
+
 function getCarById(id) {
-  return CARS_DATA.find(c => c.id === id) || null;
+  return enrichCar(CARS_DATA.find(c => c.id === id) || null);
 }
 
 function getFeaturedCars() {
@@ -442,7 +395,8 @@ function formatPrice(amount) {
 }
 
 function getStartingPrice(car) {
-  return car.pricePerDay || car.priceWithDriver || 0;
+  if (!car) return 0;
+  return getLowestTierPrice(car);
 }
 
 export {

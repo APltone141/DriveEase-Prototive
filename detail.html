@@ -38,6 +38,7 @@
       transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
     }
     .pkg-card:hover { border-color: var(--color-primary-light); box-shadow: var(--shadow-sm); }
+    .pkg-card--vip { border-color: var(--color-primary); background: linear-gradient(135deg, rgba(37,99,235,0.06), transparent); }
     .rules-list { padding-left: 1.25rem; list-style: disc; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.8; }
     .rules-list li { margin-bottom: var(--sp-2); }
     .similar-strip { display: flex; gap: var(--sp-4); overflow-x: auto; padding-bottom: var(--sp-2); scroll-snap-type: x mandatory; }
@@ -171,7 +172,7 @@
         <div class="tab-nav" role="tablist" style="margin-top:var(--sp-8);">
           <button type="button" class="tab-btn active" data-tab="desc" role="tab" aria-selected="true">Deskripsi</button>
           <button type="button" class="tab-btn" data-tab="spec" role="tab">Spesifikasi</button>
-          <button type="button" class="tab-btn" data-tab="pkg" role="tab">Paket</button>
+          <button type="button" class="tab-btn" data-tab="pkg" role="tab">Fasilitas</button>
           <button type="button" class="tab-btn" data-tab="rules" role="tab">Peraturan</button>
         </div>
         <div id="tab-desc" class="tab-content active" style="padding-top:var(--sp-6);">
@@ -206,8 +207,9 @@
             <span class="text-sm text-muted" id="sidebarReviews"></span>
           </div>
           <div class="form-group">
-            <label class="form-label" for="sidebarPackage">Pilih paket</label>
+            <label class="form-label" for="sidebarPackage">Paket fasilitas</label>
             <select id="sidebarPackage" class="input-field"></select>
+            <p class="form-hint" style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:var(--sp-1);">Harga dihitung per hari × jumlah hari sewa.</p>
           </div>
           <div class="form-group">
             <label class="form-label" for="sidebarPickup">Tanggal pickup</label>
@@ -219,10 +221,13 @@
           </div>
           <label class="checkbox-group" style="margin:var(--sp-4) 0;">
             <input type="checkbox" id="sidebarWithDriver" />
-            <span class="text-sm">Dengan sopir (+Rp 200.000/hari)</span>
+            <span class="text-sm" id="sidebarDriverLabel">Dengan sopir (+Rp 200.000/hari)</span>
           </label>
+          <p class="text-xs text-muted" id="sidebarDriverHint" style="margin:0 0 var(--sp-4);padding-left:1.75rem;">Opsional. Biaya sopir dihitung per hari sewa.</p>
           <div class="divider" style="margin:var(--sp-4) 0;"></div>
-          <div class="order-line"><span>Subtotal estimasi</span><span class="value" id="lineSubtotal">—</span></div>
+          <div class="order-line"><span>Durasi sewa</span><span class="value" id="lineDays">—</span></div>
+          <div class="order-line"><span>Tarif paket</span><span class="value" id="lineRate">—</span></div>
+          <div class="order-line"><span>Subtotal sewa</span><span class="value" id="lineSubtotal">—</span></div>
           <div class="order-line"><span>Asuransi dasar</span><span class="value" id="lineInsurance">—</span></div>
           <div class="order-line" id="lineDriverRow"><span>Biaya sopir</span><span class="value" id="lineDriver">—</span></div>
           <div class="order-line total"><span>Total estimasi</span><span class="value" id="lineTotal">—</span></div>

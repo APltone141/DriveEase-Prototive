@@ -3,58 +3,74 @@ import { checkAuth, restoreSession } from '../core/auth.js';
 import { initNavbar } from '../core/navbar.js';
 import { getParam, showToast } from '../core/router.js';
 import { getCarById, formatPrice } from '../data/cars.js';
-
-function pkgSlug(name) {
-  return (name || '').toLowerCase().replace(/\s+/g, '');
-}
-
-function rentalDays(pickStr, dropStr) {
-  if (!pickStr || !dropStr) return 1;
-  const pick = new Date(pickStr + 'T12:00:00');
-  const drop = new Date(dropStr + 'T12:00:00');
-  const d = (drop - pick) / 86400000;
-  if (d < 0) return -1;
-  return Math.max(1, Math.round(d));
-}
-
-function getSelectedPkg(car) {
-  const sel = document.getElementById('coPackage');
-  const name = sel?.value;
-  return car.packages?.find(p => p.name === name) || car.packages?.[0];
-}
-
-function computeSubtotal(pkg, days) {
-  if (!pkg) return 0;
-  if (pkg.name === 'Weekend') return pkg.price;
-  if (pkg.name === 'Weekly') return Math.round(pkg.price * (days / 7));
-  return pkg.price * days;
-}
+import {
+  rentalDays,
+  calcRentalQuote,
+  resolveTierSlug,
+  DRIVER_FEE_PER_DAY,
+} from '../data/pricing.js';
 
 let currentCar = null;
 let promoDiscount = 0;
 let lastBookingId = null;
 
-function readInsuranceCents() {
-  const el = document.querySelector('input[name="coIns"]:checked');
-  const comp = el?.value === 'comprehensive';
-  return comp ? 75000 : 50000;
+function readInsuranceType() {
+  return document.querySelector('input[name="coIns"]:checked')?.value || 'basic';
 }
 
 function readWithDriver() {
   return document.querySelector('input[name="coDriver"]:checked')?.value === '1';
 }
 
+function getSelectedTierId() {
+  return document.getElementById('coPackage')?.value || 'reguler';
+}
+
 function computeTotals() {
-  if (!currentCar) return { days: 1, subtotal: 0, insurance: 0, driver: 0, deposit: 0, total: 0 };
-  const days = rentalDays(document.getElementById('coPickupD')?.value, document.getElementById('coDropD')?.value);
-  const pkg = getSelectedPkg(currentCar);
-  const perDayIns = readInsuranceCents();
-  const insurance = days > 0 ? perDayIns * days : 0;
-  const sub = days < 0 ? 0 : Math.max(0, computeSubtotal(pkg, days) - promoDiscount);
-  const driver = days > 0 && readWithDriver() ? 200000 * days : 0;
-  const deposit = currentCar.deposit || 0;
-  const total = sub + insurance + driver + deposit;
-  return { days, subtotal: sub, insurance, driver, deposit, total, pkg };
+  if (!currentCar) {
+    return { days: 1, subtotal: 0, insurance: 0, driver: 0, driverGross: 0, deposit: 0, total: 0, pkg: null, perDayRate: 0 };
+  }
+  const days = rentalDays(
+    document.getElementById('coPickupD')?.value,
+    document.getElementById('coDropD')?.value
+  );
+  const quote = calcRentalQuote(currentCar, {
+    tierId: getSelectedTierId(),
+    days,
+    withDriver: readWithDriver(),
+    insuranceType: readInsuranceType(),
+    promoDiscount,
+    deposit: currentCar.deposit || 0,
+  });
+  return { ...quote, pkg: quote.pkg };
+}
+
+function syncDriverUi() {
+  const pkg = currentCar?.packages?.find(p => p.id === getSelectedTierId());
+  const label = document.getElementById('coDriverLabel');
+  const hint = document.getElementById('coDriverHint');
+  if (!pkg) return;
+
+  if (label) {
+    if (pkg.driverDiscountPercent === 100) {
+      label.textContent = `Dengan sopir (gratis — diskon 100% paket ${pkg.name})`;
+    } else {
+      label.textContent = `Dengan sopir (+${formatPrice(DRIVER_FEE_PER_DAY)}/hari)`;
+    }
+  }
+  if (hint) {
+    hint.textContent = pkg.driverDiscountPercent === 100
+      ? 'Opsional. Pilih sopir tanpa biaya tambahan saat paket VIP.'
+      : 'Opsional. Biaya sopir dihitung per hari sewa.';
+  }
+}
+
+function formatDriverLine(quote) {
+  if (!readWithDriver()) return formatPrice(0);
+  if (quote.driverDiscountPercent === 100 && quote.driverGross > 0) {
+    return `<span style="text-decoration:line-through;color:var(--color-text-muted);margin-right:6px;">${formatPrice(quote.driverGross)}</span> ${formatPrice(0)}`;
+  }
+  return formatPrice(quote.driver);
 }
 
 function renderSideSummary() {
@@ -62,26 +78,30 @@ function renderSideSummary() {
   const side = document.getElementById('coSideLines');
   const totalEl = document.getElementById('coSideTotal');
   if (!currentCar || !side) return;
+
   const pkg = t.pkg;
-  const linePkg = pkg ? `${currentCar.name} · ${pkg.name}` : currentCar.name;
+  const tierLabel = pkg ? `${pkg.name} · ${t.days} hari × ${formatPrice(t.perDayRate)}` : currentCar.name;
   side.innerHTML = `
-    <div class="order-line"><span>${linePkg}</span><span class="value">${formatPrice(t.subtotal)}</span></div>
+    <div class="order-line"><span>${tierLabel}</span><span class="value">${formatPrice(t.subtotal)}</span></div>
     <div class="order-line"><span>Asuransi</span><span class="value">${formatPrice(t.insurance)}</span></div>
-    <div class="order-line"><span>Sopir</span><span class="value">${formatPrice(t.driver)}</span></div>
+    <div class="order-line"><span>Sopir</span><span class="value">${formatDriverLine(t)}</span></div>
     <div class="order-line"><span>Deposit</span><span class="value">${formatPrice(t.deposit)}</span></div>
   `;
   if (totalEl) totalEl.textContent = formatPrice(t.total);
+  syncDriverUi();
 }
 
 function renderPayStepLines() {
   const el = document.getElementById('coPayLines');
   if (!el) return;
   const t = computeTotals();
+  const pkgName = t.pkg?.name || '—';
   el.innerHTML = `
-    <div class="order-line"><span>Subtotal sewa</span><span class="value">${formatPrice(t.subtotal)}</span></div>
+    <div class="order-line"><span>${pkgName} × ${t.days} hari</span><span class="value">${formatPrice(t.subtotal)}</span></div>
     <div class="order-line"><span>Asuransi</span><span class="value">${formatPrice(t.insurance)}</span></div>
-    <div class="order-line"><span>Biaya sopir</span><span class="value">${formatPrice(t.driver)}</span></div>
+    <div class="order-line"><span>Biaya sopir</span><span class="value">${formatDriverLine(t)}</span></div>
     <div class="order-line"><span>Deposit</span><span class="value">${formatPrice(t.deposit)}</span></div>
+    ${t.promoDiscount ? `<div class="order-line"><span>Diskon promo</span><span class="value">−${formatPrice(t.promoDiscount)}</span></div>` : ''}
     <div class="order-line total"><span>Total</span><span class="value">${formatPrice(t.total)}</span></div>
   `;
 }
@@ -168,7 +188,8 @@ function saveBooking(t, user) {
     userId:      user.id,
     carId:       currentCar.id,
     carName:     currentCar.name,
-    package:     pkg?.name || 'Full Day',
+    package:     pkg?.name || 'Reguler',
+    packageTier: pkg?.id || 'reguler',
     pickupDate:  document.getElementById('coPickupD').value,
     pickupTime:  document.getElementById('coPickupT').value,
     dropDate:    document.getElementById('coDropD').value,
@@ -176,7 +197,7 @@ function saveBooking(t, user) {
     city:        document.getElementById('coCity').value,
     address:     document.getElementById('coAddr').value,
     withDriver:  readWithDriver(),
-    insurance:   document.querySelector('input[name="coIns"]:checked')?.value || 'basic',
+    insurance:   readInsuranceType(),
     renterData: {
       name:  document.getElementById('coName').value,
       email: document.getElementById('coEmail').value,
@@ -223,6 +244,7 @@ function handlePay() {
       if (card) {
         card.innerHTML = `
           <div class="order-line"><span>Mobil</span><span class="value">${currentCar.name}</span></div>
+          <div class="order-line"><span>Paket</span><span class="value">${t.pkg?.name || '—'} · ${t.days} hari</span></div>
           <div class="order-line"><span>Total</span><span class="value">${formatPrice(t.total)}</span></div>
           <div class="order-line"><span>Status</span><span class="value badge badge-warning">Menunggu konfirmasi operator</span></div>
         `;
@@ -261,16 +283,20 @@ function boot() {
   const pkgSel = document.getElementById('coPackage');
   const slug = (getParam('package') || '').toLowerCase();
   pkgSel.innerHTML = (currentCar.packages || [])
-    .map(p => `<option value="${p.name}">${p.name} — ${formatPrice(p.price)}</option>`)
+    .map(p => `<option value="${p.id}">${p.name} — ${formatPrice(p.pricePerDay)}/hari</option>`)
     .join('');
-  const match = currentCar.packages?.find(p => pkgSlug(p.name) === slug);
-  if (match) pkgSel.value = match.name;
+  const resolved = resolveTierSlug(currentCar, slug);
+  if (resolved) pkgSel.value = resolved.id;
+  else {
+    const reg = currentCar.packages?.find(p => p.id === 'reguler');
+    if (reg) pkgSel.value = reg.id;
+  }
 
   const today = new Date();
-  document.getElementById('coPickupD').value = today.toISOString().split('T')[0];
+  document.getElementById('coPickupD').value = getParam('pickup') || today.toISOString().split('T')[0];
   const d2 = new Date(today);
   d2.setDate(d2.getDate() + 3);
-  document.getElementById('coDropD').value = d2.toISOString().split('T')[0];
+  document.getElementById('coDropD').value = getParam('drop') || d2.toISOString().split('T')[0];
 
   const withDrv = getParam('withDriver') === '1';
   const drvRadio = document.querySelector(`input[name="coDriver"][value="${withDrv ? '1' : '0'}"]`);
@@ -284,11 +310,16 @@ function boot() {
     document.getElementById('coAddr').value = u.address || '';
   }
 
-  ['coPackage', 'coPickupD', 'coDropD', 'coPickupT', 'coDropT'].forEach(id =>
-    document.getElementById(id)?.addEventListener('change', renderSideSummary)
+  const onPricingChange = () => {
+    renderSideSummary();
+    if (document.getElementById('step3')?.classList.contains('active')) renderPayStepLines();
+  };
+
+  ['coPackage', 'coPickupD', 'coDropD', 'coPickupT', 'coDropT'].forEach(elId =>
+    document.getElementById(elId)?.addEventListener('change', onPricingChange)
   );
-  document.querySelectorAll('input[name="coDriver"]').forEach(r => r.addEventListener('change', renderSideSummary));
-  document.querySelectorAll('input[name="coIns"]').forEach(r => r.addEventListener('change', renderSideSummary));
+  document.querySelectorAll('input[name="coDriver"]').forEach(r => r.addEventListener('change', onPricingChange));
+  document.querySelectorAll('input[name="coIns"]').forEach(r => r.addEventListener('change', onPricingChange));
 
   document.getElementById('btnStep1')?.addEventListener('click', () => {
     const days = rentalDays(document.getElementById('coPickupD').value, document.getElementById('coDropD').value);
@@ -320,11 +351,9 @@ function boot() {
 
   document.getElementById('coPromoBtn')?.addEventListener('click', () => {
     const c = document.getElementById('coPromo')?.value?.trim().toUpperCase();
-    const days = rentalDays(document.getElementById('coPickupD').value, document.getElementById('coDropD').value);
-    const pkg = getSelectedPkg(currentCar);
+    const t = computeTotals();
     if (c === 'DRIVE10') {
-      const base = computeSubtotal(pkg, days);
-      promoDiscount = Math.round(base * 0.1);
+      promoDiscount = Math.round(t.subtotal * 0.1);
       showToast('success', 'Promo', 'Diskon 10% diterapkan.');
     } else if (c) {
       showToast('info', 'Promo', 'Kode tidak dikenali (coba DRIVE10).');

@@ -228,7 +228,7 @@ const Storage = (() => {
         userId:      'usr_001',
         carId:       'car_001',
         carName:     'Toyota Innova Zenix',
-        package:     'Full Day',
+        package:     'Reguler',
         pickupDate:  '2025-06-01',
         pickupTime:  '09:00',
         dropDate:    '2025-06-04',

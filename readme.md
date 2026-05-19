@@ -1,4 +1,4 @@
-# SPEC.md — DriveEase Rental Car Prototype
+# readme.md — DriveEase Rental Car Prototype
 > Technical Specification & Developer Reference  
 > Version: 1.0 · Status: Prototype · Last Updated: 2026
 
@@ -96,7 +96,10 @@ driveease/
 │       │
 │       ├── data/
 │       │   └── cars.js         # Dataset 9 kendaraan + helper functions
-│       │
+│       │   └── pricing.js      # perhitung sewa per hari berdasarkan Tier fasility
+|       |   └── tiers.js        # Kalkulasi har Tier
+|       |   
+|       |   
 │       └── pages/
 │           ├── home.js         # Script beranda
 │           ├── layanan.js      # Script filter & grid produk
