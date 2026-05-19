@@ -1,4 +1,4 @@
-# SPEC.md — DriveEase Rental Car Prototype
+# readme.md — DriveEase Rental Car Prototype
 > Technical Specification & Developer Reference  
 > Version: 1.0 · Status: Prototype · Last Updated: 2026
 
